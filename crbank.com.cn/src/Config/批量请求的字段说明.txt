@@ -1,0 +1,58 @@
+102 批量订单
+  商户订单号 out_order_no 对应平台商自己的订单编号,例如order_code,
+  交易金额,支付金额,涉及金额类的,统一以分作为单位
+  订单状态 只有2种, 2代表交易 ,4代表退款
+
+
+--------------------------
+
+103 批量交易
+上游订单号 transaction_id 填对应支付宝微信的单号
+out_order_no 非必填,那么直接不传
+out_trade_no 商户支付单号  必填,对应平台商自己的订单号,例如 d2018112113
+交易类型 trade_type
+trade.weixin.jspay 微信公众号支付
+trade.weixin.native 微信扫码支付
+trade.weixin.apppay 微信APP支付
+trade.weixin.h5pay 微信h5支付
+trade.weixin.micropay 微信刷卡支付
+trade.alipay.native 支付宝扫码支付
+trade.alipay.jspay 支付宝公众号支付
+trade.alipay.micropay 支付宝小额支付
+trade.qqpay.micropay QQ钱包小额支付
+trade.qqpay.native QQ钱包扫码支付
+trade.qqpay.jspay QQ钱包公众号支付
+trade.qqpay.wappay QQ钱包WAP支付
+trade.baidu.native 百度扫码支付
+trade.jdpay.native 京东线下扫码支付
+trade.jdpay.onlinepay 京东线上扫码支付
+trade.jdpay.h5pay 京东线上H5支付
+trade.jdpay.micropay 京东小额支付
+trade.unionpay.native 银联扫码支付
+trade.unionpay.micropay 银联小额支付
+
+手续费不能是 0 ,非必填的也要把字段补上,值留空 `,
+
+--------------------------------------------
+104结算
+结算那里, 商户单号 指的是平台商自己生成的唯一单号,和订单号支付单号都没关系
+结算之后,就不允许调账了
+
+---------------------------------------------
+105提现
+提现那里,商户提现单号,同样是 平台商自己生成的唯一单号
+
+-----------------------------------------
+101批量进件
+跨行标示: 如果是华润的就是行内的，其他都是行外的
+银行代码: 自行查询
+
+
+------------------------
+调账:
+订单1 的分账方第一次我传了 A,B .. 后面发现错了, 其实还有一个C 也要分账,这咋办?这个调不了
+调账类型 02：订单交易金额与分账金额不一致
+调账类型 4  相当于走单次的103交易流程
+
+---------------------------
+

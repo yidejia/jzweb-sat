@@ -1,0 +1,29 @@
+{
+  "name": "jzweb/sat",
+  "description": "伊的家分帐宝",
+  "type": "library",
+  "keywords": [
+    "jzweb",
+    "sat",
+    "jzweb-sat"
+  ],
+  "homepage": "https://github.com/yidejia/jzweb-sat",
+  "authors": [
+    {
+      "name": "liusongsen",
+      "email": "liusongsen@gmail.com"
+    }
+  ],
+  "license": "MIT",
+  "require": {
+    "php": ">=7.1",
+    "guzzlehttp/guzzle": "^6.3",
+    "league/flysystem-sftp": "^1.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "jzweb\\sat\\crbank\\": "crbank.com.cn/src/",
+      "jzweb\\sat\\jppay\\": "jppay.com.cn/src/"
+    }
+  }
+}
