@@ -295,15 +295,26 @@ class Client
      * trade.unionpay.native
      * 银联扫码支付，调用统一下单接。
      *
-     * @param string $out_trade_no
-     * @param int $total_fee
+     * @param $out_trade_no
+     * @param $total_fee
      * @param string $body
      * @param string $ip
-     * @return array
+     * @param string $return_url
+     * @return array|mixed
+     * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function unionpayNative($out_trade_no, $total_fee, $body = "伊的家商城订单", $ip = "127.0.0.1")
+    public function unionpayNative($out_trade_no, $total_fee, $body = "伊的家商城订单", $ip = "127.0.0.1", $return_url = "")
     {
-        return ['error_code' => 888888, 'err_code_dsc' => '系统暂时不支持该支付方式'];
+        $params = [];
+        $params['body'] = $body;
+        $params['out_trade_no'] = $out_trade_no;
+        $params['total_fee'] = $total_fee;
+        $params['fee_type'] = "CNY";
+        $params['spbill_create_ip'] = $ip;
+        $params['trade_type'] = "trade.unionpay.native";
+        $params['op_term_tp'] = "WEB";
+        $return_url && $params['return_url'] = $return_url;
+        return $this->joinPay->unifiedorder($params);
     }
 
     /**
