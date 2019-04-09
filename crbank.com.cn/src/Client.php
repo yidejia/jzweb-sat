@@ -112,6 +112,17 @@ class Client
     }
 
     /**
+     * 批量订单 -- 处理过期数据
+     * @param $file
+     * @param $date
+     * @return string
+     */
+    public function batchOverOrders($file, $date)
+    {
+        return (new OrderTrade($this->config))->batOverOrderOrTrade($file, $date);
+    }
+
+    /**
      * 获取批量订单信息上传结果
      * @param $dir
      * @param $file
@@ -132,6 +143,16 @@ class Client
         return (new OrderTrade($this->config))->batOrderOrTrade($file);
     }
 
+    /**
+     * 批量交易(银行明细) -- 处理过期数据
+     * @param $file
+     * @param $date
+     * @return string
+     */
+    public function batchOverTrade($file, $date)
+    {
+        return (new OrderTrade($this->config))->batOverOrderOrTrade($file, $date);
+    }
 
     /**
      * 批量提现请求

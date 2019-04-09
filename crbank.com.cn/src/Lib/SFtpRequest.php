@@ -69,6 +69,44 @@ class  SFtpRequest
     }
 
     /**
+     * 封装http post方法 -- 处理过期数据
+     *
+     * @param $file
+     * @param $date
+     * @return string
+     */
+    public function uploadOver($file,$date)
+    {
+        try {
+            if (!file_exists($file)) {
+                throw  new ServerException("系统不存在这样的文件路径(" . $file . ")");
+            }
+            $path_parts = pathinfo($file);
+            $filesystem = new Filesystem($this->adapter);
+            $uploadDir = date("Ymd",strtotime($date));
+            //第一步创建文件夹
+            $filesystem->createDir($uploadDir);
+            if ($filesystem->has($uploadDir . "/" . $path_parts['filename'] . ".ok")) {
+                throw new ServerException("系统检测到重名文件".$uploadDir . "/" . $path_parts['filename'] . ".ok");
+            }
+            if ($filesystem->has($uploadDir . "/" . $path_parts['filename'] . ".tmp")) {
+                throw new ServerException("系统检测到重名文件".$uploadDir . "/" . $path_parts['filename'] . ".tmp");
+            }
+            //第二步创建.tmp并完成文件上传,之后需要改名.ok后缀
+            $filesystem->write($uploadDir . "/" . $path_parts['filename'] . ".tmp", file_get_contents($file));
+            if($filesystem->has($uploadDir . "/" . $path_parts['filename'] . ".tmp")){
+                $filesystem->rename($uploadDir . "/" . $path_parts['filename'] . ".tmp",$uploadDir . "/" . $path_parts['filename'] . ".ok");
+            }else{
+                throw new ServerException("文件写入未完成");
+            }
+            //返回数据
+            return ['return_code' => "SUCCESS", 'return_msg' => "成功", 'data' => ['dir' => $uploadDir, 'file' => $path_parts['filename']]];
+        } catch (\Exception $e) {
+            return ['return_code' => "FAIL", 'return_msg' => $e->getMessage()];
+        }
+    }
+
+    /**
      * 获取sftp处理结果
      * 针对处理成功的文件,银行服务会对服务器做定期清理
      * 我们不用主动删除这些资源

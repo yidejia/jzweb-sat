@@ -32,6 +32,17 @@ class  OrderTrade extends BankRequest {
     }
 
     /**
+     * 商户批量订单或交易上传 -- 处理过期数据
+     *
+     * @param string $file 要上传的文件名称
+     * @param string $date 日期
+     * @return string
+     */
+    public function batOverOrderOrTrade($file, $date) {
+        return $this->sftpRequest->uploadOver($file, $date);
+    }
+
+    /**
      * 获取批量操作结果
      *
      * @param string $dir
