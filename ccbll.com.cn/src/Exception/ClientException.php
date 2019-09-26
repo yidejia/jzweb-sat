@@ -1,6 +1,6 @@
 <?php
 
-namespace jzweb\sat\jppay\Exception;
+namespace jzweb\sat\ccbll\Exception;
 
 /**
  * 客户端相关异常

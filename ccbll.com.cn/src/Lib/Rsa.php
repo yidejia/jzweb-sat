@@ -45,9 +45,12 @@ class Rsa
         //读取证书
         openssl_pkcs12_read($priKey, $certs, $priKeyWd);
         //签名
-        openssl_sign($data, $sign, openssl_get_privatekey($certs['pkey']));
+        $pkey = openssl_get_privatekey($certs['pkey']);
+        openssl_sign($data, $sign, $pkey);
+        openssl_free_key($pkey);
 
-        return base64_encode($sign);
+        //签名 => 16进制 => 大写
+        return strtoupper(bin2hex($sign));
     }
 
     /**
@@ -57,11 +60,11 @@ class Rsa
      * @param $sign 要校对的的签名结果
      * return 验证结果
      */
-    public function rsaVerify($data, $ali_public_key_path, $sign)
+    public function rsaVerify($data, $signedMsg, $public_key_path)
     {
-        $pubKey = file_get_contents($ali_public_key_path);
+        $pubKey = file_get_contents($public_key_path);
         $res = openssl_get_publickey($pubKey);
-        $result = (bool)openssl_verify($data, base64_decode($sign), $res);
+        $result = (bool) openssl_verify($data, hex2bin(strtolower($signedMsg)), $res);
         openssl_free_key($res);
         return $result;
     }
@@ -86,6 +89,34 @@ class Rsa
             $result .= $decrypt;
         }
         openssl_free_key($res);
+        return $result;
+    }
+
+    /**
+     * [rsaP12Decrypt RSA证书+密码解密]
+     * @version <1.0>  2019-09-03T11:37:40+0800
+     * @param   [type] $data                     [待签名数据]
+     * @param   [type] $private_key_path         [证书路径]
+     * @param   [type] $private_key_keyword_path [密码路径]
+     * @return  [type]                           [签名结果]
+     */
+    public function rsaP12Decrypt($data, $private_key_path, $private_key_keyword_path)
+    {
+        $data = base64_decode($data);
+        $priKey = file_get_contents($private_key_path);
+        $priKeyWd = file_get_contents($private_key_keyword_path);
+        //读取证书
+        openssl_pkcs12_read($priKey, $certs, $priKeyWd);
+        $pkey = openssl_get_privatekey($certs['pkey']);
+        //把需要解密的内容，按128位拆开解密
+        $result = '';
+        for ($i = 0; $i < strlen($data) / 128; $i++) {
+            $str = substr($data, $i * 128, 128);
+            openssl_private_decrypt($str, $decrypt, $pkey);
+            $result .= $decrypt;
+        }
+        openssl_free_key($pkey);
+
         return $result;
     }
 }
