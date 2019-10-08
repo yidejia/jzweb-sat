@@ -112,7 +112,7 @@ class  HttpRequest
     {
         //获取盐值
         $salt = $this->getNonceStr();
-        //获取Info报文
+        //获取Info原文
         $info = $this->getInfoMessage($trxCode, $data['tradeNo'], $salt);
         //获取Body报文
         //去掉交易流水号
@@ -137,7 +137,6 @@ class  HttpRequest
      */
     private function convertMessage($message)
     {
-
         return @iconv('GB2312', 'UTF-8', $message);
     }
 
@@ -150,7 +149,7 @@ class  HttpRequest
     private function formatMessage($message)
     {
         $output = [];
-        parse_url($message, $output);
+        parse_str($message, $output);
 
         if (isset($output['returnCode'])) {
             return [
@@ -158,11 +157,7 @@ class  HttpRequest
                 'returnMessage' => $this->convertMessage($output['returnMessage']),
             ];
         } else {
-            return [
-                'INFO' => $output['INFO'],
-                'BODY' => $output['BODY'],
-                'SIGN' => $output['SIGN']
-            ];
+            return $output;
         }
     }
 
@@ -314,6 +309,4 @@ class  HttpRequest
 
         echo $echo;
     }
-
-
 }
