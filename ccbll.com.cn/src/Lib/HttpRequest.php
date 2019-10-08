@@ -148,6 +148,14 @@ class  HttpRequest
      */
     private function formatMessage($message)
     {
+        if (is_array($message)) {
+            $result = '';
+            foreach ($message as $k => $v){
+                $result .= ($result ? '&' : '') . $k . '=' . $v;
+            }
+            return $result;
+        }
+
         $output = [];
         parse_str($message, $output);
 
@@ -176,7 +184,7 @@ class  HttpRequest
             //报文
             $message = $this->getMessage($trxCode, $data);
             $message['BODY'] = urlencode($message['BODY']);
-            $message = http_build_query($message);
+            $message = $this->formatMessage($message);
             // \Log::channel('console')->debug($message);
             $res = $client->request('POST', $this->config['url_query'], [
                 'headers' => [
