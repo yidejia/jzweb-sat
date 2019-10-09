@@ -165,7 +165,11 @@ class  HttpRequest
                 'returnMessage' => $this->convertMessage($output['returnMessage']),
             ];
         } else {
-            return $output;
+            return [
+                'INFO' => str_replace(' ', '+', $output['INFO']),
+                'BODY' => str_replace(' ', '+', $output['BODY']),
+                'SIGN' => str_replace(' ', '+', $output['SIGN']),
+            ];
         }
     }
 
@@ -185,7 +189,6 @@ class  HttpRequest
             $message = $this->getMessage($trxCode, $data);
             $message['BODY'] = urlencode($message['BODY']);
             $message = $this->formatMessage($message);
-            // \Log::channel('console')->debug($message);
             $res = $client->request('POST', $this->config['url_query'], [
                 'headers' => [
                     'Content-Type' => 'application/x-www-form-urlencoded',
@@ -213,17 +216,12 @@ class  HttpRequest
      */
     private function verifySign($message, $asynchro = false)
     {
-
-        if (!isset($message['INFO'])) {
-            return $message;
-        }
-
         //获取info原文
-        $info = base64_decode(urldecode(($message['INFO'])));
-        $infoMsg = json_decode($info, true);
+        $info = base64_decode($asynchro ? urldecode($message['INFO']) : $message['INFO']);
+        $infoMsg = json_decode($this->convertMessage($info), true);
 
         //获取body原文
-        if (isset($info['salt']) && $info['salt'] && !$asynchro) {
+        if (isset($infoMsg['salt']) && $infoMsg['salt'] && !$asynchro) {
             //证书私钥解密
             $salt = (new Rsa())->rsaP12Decrypt($infoMsg['salt'], $this->config['private_key_path'], $this->config['private_key_keyword_path']);
             $body = base64_decode($message['BODY']);
@@ -235,7 +233,7 @@ class  HttpRequest
         }
 
         //获取签名
-        $sign = base64_decode(urldecode($message['SIGN']));
+        $sign = base64_decode($asynchro ? urldecode($message['SIGN']) : $message['SIGN']);
         $signedMsg = json_decode($sign, true);
         $signedMsg = $signedMsg['signedMsg'];
 
@@ -307,7 +305,6 @@ class  HttpRequest
     public function h5Post($trxCode, $data)
     {
         $message = $this->getMessage($trxCode, $data);
-        // \Log::channel('console')->debug($message);
         $echo = "<form style='display:none;' id='form1' name='form1' method='post' action='" . $this->config['h5_url'] . $this->config['url_query'] . "'>";
         foreach ($message as $k => $v) {
             $echo .= "<input name='{$k}' type='text' value='{$v}' />";
