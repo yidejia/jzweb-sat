@@ -49,14 +49,15 @@ class WxPayAdapter extends Adaptee implements Target
     /**
      * 构造请求参数
      *
-     * @param string $paytype
-     * @param array $data
+     * @param $payType
+     * @param $data
      * @return array
      */
-    private function buildRequestParams($paytype, $data)
+    private function buildRequestParams($payType, $data)
     {
+        list($goods_str, $goods_ids_str, $quantity, $customer_mobile) = explode(";", $data['body']);
         return [
-            'payType' => $paytype,
+            'payType' => $payType,
             'mercOrdNo' => $data['out_trade_no'],
             'trxType' => '12001',//业务类型包括：12001:B2C商城消费、12002:B2C商城消费合伙人模式、12006:B2B商城消费、12007:B2B商城消费合伙人模式
             'trAmt' => $data['total_fee'] * 100,
@@ -72,12 +73,12 @@ class WxPayAdapter extends Adaptee implements Target
                 [
                     'tradeOrdNo' => $data['out_trade_no'],
                     'mercMbrCode' => $data['trade_info'][0], //填写子商户信息
-                    'tradeNm' => $data['trade_info'][1],    //填产品商品串
-                    'tradeRmk' => $data['trade_info'][2],   //填产品ID
-                    'tradeNum' => $data['trade_info'][3],   //填写产品总数量
-                    'tradeAmt' => $data['trade_info'] * 100,
-                    'platFeeAmt1' => $data['trade_info'] * 10 * 0.10,
-                    'cMbl' => $data['trade_info'][4],       //不填无法进行确认收货
+                    'tradeNm' => $goods_str,    //填产品商品串
+                    'tradeRmk' => $goods_ids_str,   //填产品ID
+                    'tradeNum' => $quantity,   //填写产品总数量
+                    'tradeAmt' => $data['total_fee'] * 100,
+                    'platFeeAmt1' => $data['total_fee'] * 10 * 0.10,
+                    'cMbl' => $customer_mobile,       //不填无法进行确认收货
                 ],
             ],
             'ordValTmUnit' => 'H', //订单有效时间单位,D:日、H:时、M:分、S:秒
@@ -103,7 +104,7 @@ class WxPayAdapter extends Adaptee implements Target
      * @param string $return_url
      * @return array|mixed|void
      */
-    public function weixinJsPay($appid, $openid, $out_trade_no, $total_fee, $body = "伊的家商城订单", $ip = "127.0.0.1", $return_url = "")
+    public function weixinJsPay($appid, $openid, $out_trade_no, $total_fee, $body, $ip = "127.0.0.1", $return_url = "")
     {
         $data = $this->buildRequestParams(self::PAYTYPE_I, func_get_args());
         return (new Adaptee($this->config))->anonyPay($data);
@@ -120,7 +121,7 @@ class WxPayAdapter extends Adaptee implements Target
      * @return array|mixed
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function weixiNative($out_trade_no, $total_fee, $body = "伊的家商城订单", $ip = "127.0.0.1")
+    public function weixiNative($out_trade_no, $total_fee, $body, $ip = "127.0.0.1")
     {
         $data = $this->buildRequestParams(self::PAYTYPE_J, func_get_args());
         return (new Adaptee($this->config))->anonyPay($data);
@@ -139,7 +140,7 @@ class WxPayAdapter extends Adaptee implements Target
      * @return array|mixed
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function weixinAppPay($out_trade_no, $total_fee, $body = "伊的家商城订单", $ip = "127.0.0.1", $return_url = "")
+    public function weixinAppPay($out_trade_no, $total_fee, $body, $ip = "127.0.0.1", $return_url = "")
     {
         $data = $this->buildRequestParams(self::PAYTYPE_C, func_get_args());
         return (new Adaptee($this->config))->anonyPay($data);
@@ -157,7 +158,7 @@ class WxPayAdapter extends Adaptee implements Target
      * @return array|mixed
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function weixinAppPay2($out_trade_no, $total_fee, $body = "伊的家商城订单", $ip = "127.0.0.1")
+    public function weixinAppPay2($out_trade_no, $total_fee, $body, $ip = "127.0.0.1")
     {
         $data = $this->buildRequestParams(self::PAYTYPE_C, func_get_args());
         return (new Adaptee($this->config))->anonyPay($data);
@@ -175,7 +176,7 @@ class WxPayAdapter extends Adaptee implements Target
      * @return array|mixed
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function weixinH5Pay($out_trade_no, $total_fee, $body = "伊的家商城订单", $ip = "127.0.0.1", $return_url = "")
+    public function weixinH5Pay($out_trade_no, $total_fee, $body, $ip = "127.0.0.1", $return_url = "")
     {
         //todo 暂时不支持该支付方式
         return ['error_code' => 888888, 'err_code_dsc' => '系统暂时不支持该支付方式'];
@@ -195,7 +196,7 @@ class WxPayAdapter extends Adaptee implements Target
      * @return array|mixed
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function weixinMpPay($appid, $openid, $out_trade_no, $total_fee, $body = "伊的家商城订单", $ip = "127.0.0.1", $return_url = "")
+    public function weixinMpPay($appid, $openid, $out_trade_no, $total_fee, $body, $ip = "127.0.0.1", $return_url = "")
     {
         $data = $this->buildRequestParams(self::PAYTYPE_W, func_get_args());
         return (new Adaptee($this->config))->anonyPay($data);
@@ -211,7 +212,7 @@ class WxPayAdapter extends Adaptee implements Target
      * @param string $ip
      * @return array
      */
-    public function weixinMicroPay($out_trade_no, $total_fee, $body = "伊的家商城订单", $ip = "127.0.0.1")
+    public function weixinMicroPay($out_trade_no, $total_fee, $body, $ip = "127.0.0.1")
     {
         //todo 暂时不支持该支付方式
         return ['error_code' => 888888, 'err_code_dsc' => '系统暂时不支持该支付方式'];
@@ -228,7 +229,7 @@ class WxPayAdapter extends Adaptee implements Target
      * @return array|mixed
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function alipayNative($out_trade_no, $total_fee, $body = "伊的家商城订单", $ip = "127.0.0.1")
+    public function alipayNative($out_trade_no, $total_fee, $body, $ip = "127.0.0.1")
     {
         $data = $this->buildRequestParams(self::PAYTYPE_P, func_get_args());
         return (new Adaptee($this->config))->anonyPay($data);
@@ -244,7 +245,7 @@ class WxPayAdapter extends Adaptee implements Target
      * @param string $ip
      * @return array
      */
-    public function alipayJsPay($out_trade_no, $total_fee, $body = "伊的家商城订单", $ip = "127.0.0.1")
+    public function alipayJsPay($out_trade_no, $total_fee, $body, $ip = "127.0.0.1")
     {
         //todo 暂时不支持该支付方式
         return ['error_code' => 888888, 'err_code_dsc' => '系统暂时不支持该支付方式'];
@@ -262,7 +263,7 @@ class WxPayAdapter extends Adaptee implements Target
      * @return array|mixed
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function alipayH5Pay($out_trade_no, $total_fee, $body = "伊的家商城订单", $ip = "127.0.0.1", $return_url = "")
+    public function alipayH5Pay($out_trade_no, $total_fee, $body, $ip = "127.0.0.1", $return_url = "")
     {
         //todo 暂时不支持该支付方式
         return ['error_code' => 888888, 'err_code_dsc' => '系统暂时不支持该支付方式'];
@@ -278,7 +279,7 @@ class WxPayAdapter extends Adaptee implements Target
      * @param string $ip
      * @return array
      */
-    public function alipayMicroPay($out_trade_no, $total_fee, $body = "伊的家商城订单", $ip = "127.0.0.1")
+    public function alipayMicroPay($out_trade_no, $total_fee, $body, $ip = "127.0.0.1")
     {
         //todo 暂时不支持该支付方式
         return ['error_code' => 888888, 'err_code_dsc' => '系统暂时不支持该支付方式'];
@@ -296,7 +297,7 @@ class WxPayAdapter extends Adaptee implements Target
      * @return array|mixed
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function unionpayNative($out_trade_no, $total_fee, $body = "伊的家商城订单", $ip = "127.0.0.1", $return_url = "")
+    public function unionpayNative($out_trade_no, $total_fee, $body, $ip = "127.0.0.1", $return_url = "")
     {
         //todo 暂时不支持该支付方式
         return ['error_code' => 888888, 'err_code_dsc' => '系统暂时不支持该支付方式'];
@@ -312,7 +313,7 @@ class WxPayAdapter extends Adaptee implements Target
      * @param string $ip
      * @return array
      */
-    public function unionpayMicroPay($out_trade_no, $total_fee, $body = "伊的家商城订单", $ip = "127.0.0.1")
+    public function unionpayMicroPay($out_trade_no, $total_fee, $body, $ip = "127.0.0.1")
     {
         //todo 暂时不支持该支付方式
         return ['error_code' => 888888, 'err_code_dsc' => '系统暂时不支持该支付方式'];

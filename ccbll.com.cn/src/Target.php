@@ -26,7 +26,7 @@ interface Target
      * @return array|mixed
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function weixinJsPay($appid, $openid, $out_trade_no, $total_fee, $body = "伊的家商城订单", $ip = "127.0.0.1", $return_url = "");
+    public function weixinJsPay($appid, $openid, $out_trade_no, $total_fee, $body, $ip = "127.0.0.1", $return_url = "");
 
     /**
      * trade.weixin.native
@@ -39,7 +39,7 @@ interface Target
      * @return array|mixed
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function weixiNative($out_trade_no, $total_fee, $body = "伊的家商城订单", $ip = "127.0.0.1");
+    public function weixiNative($out_trade_no, $total_fee, $body, $ip = "127.0.0.1");
 
     /**
      * trade.weixin.apppay
@@ -54,7 +54,7 @@ interface Target
      * @return array|mixed
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function weixinAppPay($out_trade_no, $total_fee, $body = "伊的家商城订单", $ip = "127.0.0.1", $return_url = "");
+    public function weixinAppPay($out_trade_no, $total_fee, $body, $ip = "127.0.0.1", $return_url = "");
 
     /**
      * trade.weixin.apppay2
@@ -68,7 +68,7 @@ interface Target
      * @return array|mixed
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function weixinAppPay2($out_trade_no, $total_fee, $body = "伊的家商城订单", $ip = "127.0.0.1");
+    public function weixinAppPay2($out_trade_no, $total_fee, $body, $ip = "127.0.0.1");
 
     /**
      * trade.weixin.h5pay
@@ -82,7 +82,7 @@ interface Target
      * @return array|mixed
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function weixinH5Pay($out_trade_no, $total_fee, $body = "伊的家商城订单", $ip = "127.0.0.1", $return_url = "");
+    public function weixinH5Pay($out_trade_no, $total_fee, $body, $ip = "127.0.0.1", $return_url = "");
 
     /**
      * trade.weixin.mppay
@@ -98,7 +98,7 @@ interface Target
      * @return array|mixed
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function weixinMpPay($appid, $openid, $out_trade_no, $total_fee, $body = "伊的家商城订单", $ip = "127.0.0.1", $return_url = "");
+    public function weixinMpPay($appid, $openid, $out_trade_no, $total_fee, $body, $ip = "127.0.0.1", $return_url = "");
 
     /**
      * trade.weixin.micropay
@@ -110,7 +110,7 @@ interface Target
      * @param string $ip
      * @return array
      */
-    public function weixinMicroPay($out_trade_no, $total_fee, $body = "伊的家商城订单", $ip = "127.0.0.1");
+    public function weixinMicroPay($out_trade_no, $total_fee, $body, $ip = "127.0.0.1");
 
     /**
      * trade.alipay.native
@@ -123,7 +123,7 @@ interface Target
      * @return array|mixed
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function alipayNative($out_trade_no, $total_fee, $body = "伊的家商城订单", $ip = "127.0.0.1");
+    public function alipayNative($out_trade_no, $total_fee, $body, $ip = "127.0.0.1");
 
 
     /**
@@ -136,7 +136,7 @@ interface Target
      * @param string $ip
      * @return array
      */
-    public function alipayJsPay($out_trade_no, $total_fee, $body = "伊的家商城订单", $ip = "127.0.0.1");
+    public function alipayJsPay($out_trade_no, $total_fee, $body, $ip = "127.0.0.1");
 
     /**
      * trade.alipay.h5pay
@@ -150,7 +150,7 @@ interface Target
      * @return array|mixed
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function alipayH5Pay($out_trade_no, $total_fee, $body = "伊的家商城订单", $ip = "127.0.0.1", $return_url = "");
+    public function alipayH5Pay($out_trade_no, $total_fee, $body, $ip = "127.0.0.1", $return_url = "");
 
     /**
      * trade.alipay.micropay
@@ -162,7 +162,7 @@ interface Target
      * @param string $ip
      * @return array
      */
-    public function alipayMicroPay($out_trade_no, $total_fee, $body = "伊的家商城订单", $ip = "127.0.0.1");
+    public function alipayMicroPay($out_trade_no, $total_fee, $body, $ip = "127.0.0.1");
 
     /**
      * trade.unionpay.native
@@ -176,7 +176,7 @@ interface Target
      * @return array|mixed
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function unionpayNative($out_trade_no, $total_fee, $body = "伊的家商城订单", $ip = "127.0.0.1", $return_url = "");
+    public function unionpayNative($out_trade_no, $total_fee, $body, $ip = "127.0.0.1", $return_url = "");
 
     /**
      * trade.unionpay.micropay
@@ -188,7 +188,7 @@ interface Target
      * @param string $ip
      * @return array
      */
-    public function unionpayMicroPay($out_trade_no, $total_fee, $body = "伊的家商城订单", $ip = "127.0.0.1");
+    public function unionpayMicroPay($out_trade_no, $total_fee, $body, $ip = "127.0.0.1");
 
 
     /**
