@@ -86,26 +86,27 @@ class WxPayAdapter extends Adaptee implements Target
 
     /**
      * 转换支付类型
+     *
      * @param   [type] $payType                 [description]
      * @return  [type]                          [description]
      */
     private function changePayType($payType)
     {
         $payTypes = [
-            'C' => 'trade.weixin.apppay',  //C:微信APP支付
-            'D' => 'trade.alipay.apppay',  //D:支付宝APP支付
+            'C' => 'trade.weixin.apppay',    //C:微信APP支付
+            'D' => 'trade.alipay.apppay',    //D:支付宝APP支付
             'H' => 'trade.unionpay.native',  //H:一码付（H5二维码）
-            'I' => 'trade.weixin.native',  //I:微信扫码支付
-            'J' => 'trade.weixin.jspay',  //J:微信公众号支付
+            'I' => 'trade.weixin.native',    //I:微信扫码支付
+            'J' => 'trade.weixin.jspay',     //J:微信公众号支付
             'K' => '',  //K:建行信用卡分期支付
             'L' => '',  //L:银联在线
             'M' => '',  //M:建行网关对公
             'N' => '',  //N:建行网关对私
-            'P' => 'trade.alipay.native',  //P:支付宝扫码
+            'P' => 'trade.alipay.native',   //P:支付宝扫码
             'Q' => '',  //Q:一码付（自定义二维码）
             'R' => '',  //R:龙支付扫码
             'S' => '',  //S:龙支付APP支付
-            'W' => 'trade.weixin.mppay',  //W:微信小程序支付
+            'W' => 'trade.weixin.mppay',    //W:微信小程序支付
         ];
 
         return $payTypes[$payType];
@@ -114,14 +115,15 @@ class WxPayAdapter extends Adaptee implements Target
     /**
      *文件上传
      *
+     * @param string $trade_no 交易流水号，随机生成, 每次请求都必须有, 建议用公共方法生成
      * @param url $file_url 软链接，外部可访问
      * @param string $oper_type 操作类型：01:新增，02:修改，默认为01
      * @return array
      */
-    public function uploadFile($file_url, $oper_type = "01")
+    public function uploadFile($trade_no, $file_url, $oper_type = "01")
     {
         $data = [
-            "tradeNo" => "m2019090318350376998", //交易流水号，随机生成, 每次请求都必须有, 建议用公共方法生成
+            "tradeNo" => $trade_no,
             "fileUrl" => $file_url,
             "fileType" => "01", //文件格式:01:图片,02:PDF文件
             "operType" => $oper_type,
@@ -142,6 +144,7 @@ class WxPayAdapter extends Adaptee implements Target
      * 必须有页面支撑，无法再测试用例里面直接调用
      * 会跳到建行页面输入结算账户名，结算卡号，交易密码，以及打款验证
      *
+     * @param string $trade_no 交易流水号，随机生成, 每次请求都必须有, 建议用公共方法生成
      * @param int $entity_id 后台单位ID
      * @param string $entity_name 后台单位名称
      * @param string $legal 公司法人
@@ -159,11 +162,11 @@ class WxPayAdapter extends Adaptee implements Target
      * @param bool $is_mobile_view
      * @param string $return_url
      */
-    public function createAccountByWeb($entity_id, $entity_name, $legal, $legal_id_card, $agent, $agent_id_card, $agent_mobile, $buss_pic_id, $legal_front_pic_id, $legal_back_pic_id, $cert_pic_id = "", $role_id = "100", $registrant = 1, $acc_type = 2, $is_mobile_view = false, $return_url = "")
+    public function createAccountByWeb($trade_no, $entity_id, $entity_name, $legal, $legal_id_card, $agent, $agent_id_card, $agent_mobile, $buss_pic_id, $legal_front_pic_id, $legal_back_pic_id, $cert_pic_id = "", $role_id = "100", $registrant = 1, $acc_type = 2, $is_mobile_view = false, $return_url = "")
     {
 
         $data = [
-            'tradeNo' => 'm2019090318350376998',
+            'tradeNo' => $trade_no,
             'platCusNO' => $entity_id,
             'platRoleID' => $role_id,
             'busFullNm' => $entity_name,
@@ -189,16 +192,17 @@ class WxPayAdapter extends Adaptee implements Target
      * 会有两次异步通知，申请成功，审核成功，依据流水号reqSn识别，所以要记录当时请求的流水号reqSn
      * 或者单独一个接收通知接口
      *
-     * @param $mch_code
+     * @param string $trade_no 交易流水号，随机生成, 每次请求都必须有, 建议用公共方法生成
+     * @param string $mch_code
      * @param $cert_pic_id
      * @param string $oper_type //12:银行账户开户行行号变更、13:银行账户开户行名称变更、14.法人变更、15.银行账号变更、23:被授权人变更
      * @param bool $is_mobile_view
      * @param string $return_url
      */
-    public function merchantInfoChangeByWeb($mch_code, $cert_pic_id, $oper_type = "23", $is_mobile_view = false, $return_url = "")
+    public function merchantInfoChangeByWeb($trade_no, $mch_code, $cert_pic_id, $oper_type = "23", $is_mobile_view = false, $return_url = "")
     {
         $data = [
-            'tradeNo' => 'm2019092016014761149',
+            'tradeNo' => $trade_no,
             'mbrCode' => $mch_code,
             'operType' => $oper_type,
             'pageRetUrl' => $return_url, //页面返回url
@@ -218,6 +222,7 @@ class WxPayAdapter extends Adaptee implements Target
      * 锁定、解锁：指的是这个用户什么操作都不能做
      * 冻结、解冻：指的是  关于资金类的交易  无法进行
      *
+     * @param string $trade_no 交易流水号，随机生成, 每次请求都必须有, 建议用公共方法生成
      * @param string $mch_code
      * @param string $comments
      * @param string $effDate
@@ -225,11 +230,11 @@ class WxPayAdapter extends Adaptee implements Target
      * @param string $oper_type 操作类型包括：04:锁定、05:解锁、06:冻结、07:解冻
      * @param bool $is_mobile_view 标记是否是移动端访问,默认否
      */
-    public function accountStatusChange($mch_code, $comments, $effDate = "", $expDate = "", $oper_type = "04", $is_mobile_view = false)
+    public function accountStatusChange($trade_no, $mch_code, $comments, $effDate = "", $expDate = "", $oper_type = "04", $is_mobile_view = false)
     {
 
         $data = [
-            'tradeNo' => 'm2019092016014761149',
+            'tradeNo' => $trade_no,
             'mbrCode' => $mch_code,
             'operType' => $oper_type,
             'effectiveFlag' => 'Y', //是否立刻生效，Y:是、N:否
@@ -251,16 +256,17 @@ class WxPayAdapter extends Adaptee implements Target
     /**
      * 交易密码重置
      *
+     * @param string $trade_no 交易流水号，随机生成, 每次请求都必须有, 建议用公共方法生成
      * @param $mch_code
      * @param string $oper_type 17:交易密码修改、18:交易密码重置
      * @param bool $is_mobile_view 标记是否是移动端访问,默认否
      * @param string $return_url
      */
-    public function restPwdByWeb($mch_code, $oper_type = "17", $is_mobile_view = false, $return_url = "")
+    public function restPwdByWeb($trade_no, $mch_code, $oper_type = "17", $is_mobile_view = false, $return_url = "")
     {
 
         $data = [
-            'tradeNo' => 'm2019092016014761149',
+            'tradeNo' => $trade_no,
             'mbrCode' => $mch_code,
             'operType' => $oper_type,
             'pageRetUrl' => $return_url, //页面返回url
@@ -272,6 +278,8 @@ class WxPayAdapter extends Adaptee implements Target
     /**
      * 微信公众号支付
      *
+     *
+     * @param string $trade_no 交易流水号，随机生成, 每次请求都必须有, 建议用公共方法生成
      * @param string $appid
      * @param string $openid
      * @param string $out_trade_no
@@ -281,8 +289,7 @@ class WxPayAdapter extends Adaptee implements Target
      * @param string $return_url
      * @return array|mixed|void
      */
-    public
-    function weixinJsPay($appid, $openid, $out_trade_no, $total_fee, $body, $ip = "127.0.0.1", $return_url = "")
+    public function weixinJsPay($trade_no, $appid, $openid, $out_trade_no, $total_fee, $body, $ip = "127.0.0.1", $return_url = "")
     {
         //todo 暂时不支持该支付方式
         return ['error_code' => 888888, 'err_code_dsc' => '系统暂时不支持该支付方式'];
@@ -292,6 +299,7 @@ class WxPayAdapter extends Adaptee implements Target
      * trade.weixin.native
      * 微信扫码支付，调用统一下单接口
      *
+     * @param string $trade_no 交易流水号，随机生成, 每次请求都必须有, 建议用公共方法生成
      * @param string $out_trade_no
      * @param int $total_fee
      * @param string $body
@@ -299,8 +307,7 @@ class WxPayAdapter extends Adaptee implements Target
      * @return array|mixed
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public
-    function weixiNative($out_trade_no, $total_fee, $body, $ip = "127.0.0.1")
+    public function weixiNative($trade_no, $out_trade_no, $total_fee, $body, $ip = "127.0.0.1", $return_url = "")
     {
         $data = $this->buildRequestParams(self::PAYTYPE_J, func_get_args());
         return (new Adaptee($this->config))->anonyPay($data);
@@ -311,6 +318,7 @@ class WxPayAdapter extends Adaptee implements Target
      * 微信APP支付，调用统一下单接口【拉起微信APP支付,微信官方原生的】
      * todo 我们目前的产品,暂时没有开通该服务
      *
+     * @param string $trade_no 交易流水号，随机生成, 每次请求都必须有, 建议用公共方法生成
      * @param $out_trade_no
      * @param $total_fee
      * @param string $body
@@ -320,7 +328,7 @@ class WxPayAdapter extends Adaptee implements Target
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
     public
-    function weixinAppPay($out_trade_no, $total_fee, $body, $ip = "127.0.0.1", $return_url = "")
+    function weixinAppPay($trade_no, $out_trade_no, $total_fee, $body, $ip = "127.0.0.1", $return_url = "")
     {
         //todo 暂时不支持该支付方式
         return ['error_code' => 888888, 'err_code_dsc' => '系统暂时不支持该支付方式'];
@@ -331,6 +339,7 @@ class WxPayAdapter extends Adaptee implements Target
      * 微信APP+支付，调用统一下单接口【拉起优洛微信小程序支付】
      * 我们目前的产品，开通了该服务
      *
+     * @param string $trade_no 交易流水号，随机生成, 每次请求都必须有, 建议用公共方法生成
      * @param string $out_trade_no
      * @param int $total_fee
      * @param string $body
@@ -338,8 +347,7 @@ class WxPayAdapter extends Adaptee implements Target
      * @return array|mixed
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public
-    function weixinAppPay2($out_trade_no, $total_fee, $body, $ip = "127.0.0.1")
+    public function weixinAppPay2($trade_no, $out_trade_no, $total_fee, $body, $ip = "127.0.0.1", $return_url = "")
     {
         $data = $this->buildRequestParams(self::PAYTYPE_C, func_get_args());
         return (new Adaptee($this->config))->anonyPay($data);
@@ -349,6 +357,7 @@ class WxPayAdapter extends Adaptee implements Target
      * trade.weixin.h5pay
      * 微信h5支付，调用统一下单接口
      *
+     * @param string $trade_no 交易流水号，随机生成, 每次请求都必须有, 建议用公共方法生成
      * @param string $out_trade_no
      * @param int $total_fee
      * @param string $body
@@ -357,8 +366,7 @@ class WxPayAdapter extends Adaptee implements Target
      * @return array|mixed
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public
-    function weixinH5Pay($out_trade_no, $total_fee, $body, $ip = "127.0.0.1", $return_url = "")
+    public function weixinH5Pay($trade_no, $out_trade_no, $total_fee, $body, $ip = "127.0.0.1", $return_url = "")
     {
         //todo 暂时不支持该支付方式
         return ['error_code' => 888888, 'err_code_dsc' => '系统暂时不支持该支付方式'];
@@ -368,6 +376,7 @@ class WxPayAdapter extends Adaptee implements Target
      * trade.weixin.mppay
      * 适用微信小程序中拉起微信支付。
      *
+     * @param string $trade_no 交易流水号，随机生成, 每次请求都必须有, 建议用公共方法生成
      * @param string $appid
      * @param string $openid
      * @param string $out_trade_no
@@ -378,8 +387,7 @@ class WxPayAdapter extends Adaptee implements Target
      * @return array|mixed
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public
-    function weixinMpPay($appid, $openid, $out_trade_no, $total_fee, $body, $ip = "127.0.0.1", $return_url = "")
+    public function weixinMpPay($trade_no, $appid, $openid, $out_trade_no, $total_fee, $body, $ip = "127.0.0.1", $return_url = "")
     {
         $data = $this->buildRequestParams(self::PAYTYPE_W, func_get_args());
         return (new Adaptee($this->config))->anonyPay($data);
@@ -389,14 +397,14 @@ class WxPayAdapter extends Adaptee implements Target
      * trade.weixin.micropay
      * 微信刷卡支付，刷卡支付有单独的支付接口，不调用统一下单接口
      *
+     * @param string $trade_no 交易流水号，随机生成, 每次请求都必须有, 建议用公共方法生成
      * @param string $out_trade_no
      * @param int $total_fee
      * @param string $body
      * @param string $ip
      * @return array
      */
-    public
-    function weixinMicroPay($out_trade_no, $total_fee, $body, $ip = "127.0.0.1")
+    public function weixinMicroPay($trade_no, $out_trade_no, $total_fee, $body, $ip = "127.0.0.1", $return_url = "")
     {
         //todo 暂时不支持该支付方式
         return ['error_code' => 888888, 'err_code_dsc' => '系统暂时不支持该支付方式'];
@@ -406,6 +414,7 @@ class WxPayAdapter extends Adaptee implements Target
      * trade.alipay.native
      * 支付宝扫码支付，调用统一下单接口
      *
+     * @param string $trade_no 交易流水号，随机生成, 每次请求都必须有, 建议用公共方法生成
      * @param string $out_trade_no
      * @param int $total_fee
      * @param string $body
@@ -413,8 +422,7 @@ class WxPayAdapter extends Adaptee implements Target
      * @return array|mixed
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public
-    function alipayNative($out_trade_no, $total_fee, $body, $ip = "127.0.0.1")
+    public function alipayNative($trade_no, $out_trade_no, $total_fee, $body, $ip = "127.0.0.1", $return_url = "")
     {
         $data = $this->buildRequestParams(self::PAYTYPE_P, func_get_args());
         return (new Adaptee($this->config))->anonyPay($data);
@@ -424,14 +432,14 @@ class WxPayAdapter extends Adaptee implements Target
      * trade.alipay.jspay
      * 支付宝公众号支付，调用统一下单接口
      *
+     * @param string $trade_no 交易流水号，随机生成, 每次请求都必须有, 建议用公共方法生成
      * @param $out_trade_no
      * @param $total_fee
      * @param string $body
      * @param string $ip
      * @return array
      */
-    public
-    function alipayJsPay($out_trade_no, $total_fee, $body, $ip = "127.0.0.1")
+    public function alipayJsPay($trade_no, $out_trade_no, $total_fee, $body, $ip = "127.0.0.1", $return_url = "")
     {
         //todo 暂时不支持该支付方式
         return ['error_code' => 888888, 'err_code_dsc' => '系统暂时不支持该支付方式'];
@@ -441,6 +449,7 @@ class WxPayAdapter extends Adaptee implements Target
      * trade.alipay.h5pay
      * 支付宝H5支付，调用统一下单接口
      *
+     * @param string $trade_no 交易流水号，随机生成, 每次请求都必须有, 建议用公共方法生成
      * @param string $out_trade_no
      * @param $total_fee
      * @param string $body
@@ -449,8 +458,7 @@ class WxPayAdapter extends Adaptee implements Target
      * @return array|mixed
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public
-    function alipayH5Pay($out_trade_no, $total_fee, $body, $ip = "127.0.0.1", $return_url = "")
+    public function alipayH5Pay($trade_no, $out_trade_no, $total_fee, $body, $ip = "127.0.0.1", $return_url = "")
     {
         //todo 暂时不支持该支付方式
         return ['error_code' => 888888, 'err_code_dsc' => '系统暂时不支持该支付方式'];
@@ -460,14 +468,14 @@ class WxPayAdapter extends Adaptee implements Target
      * trade.alipay.micropay
      * 支付宝小额支付，刷卡支付有单独的支付接口，不调用统一下单接口
      *
+     * @param string $trade_no 交易流水号，随机生成, 每次请求都必须有, 建议用公共方法生成
      * @param string $out_trade_no
      * @param int $total_fee
      * @param string $body
      * @param string $ip
      * @return array
      */
-    public
-    function alipayMicroPay($out_trade_no, $total_fee, $body, $ip = "127.0.0.1")
+    public function alipayMicroPay($trade_no, $out_trade_no, $total_fee, $body, $ip = "127.0.0.1", $return_url = "")
     {
         //todo 暂时不支持该支付方式
         return ['error_code' => 888888, 'err_code_dsc' => '系统暂时不支持该支付方式'];
@@ -477,6 +485,7 @@ class WxPayAdapter extends Adaptee implements Target
      * trade.unionpay.native
      * 银联扫码支付，调用统一下单接。
      *
+     * @param string $trade_no 交易流水号，随机生成, 每次请求都必须有, 建议用公共方法生成
      * @param $out_trade_no
      * @param $total_fee
      * @param string $body
@@ -485,8 +494,7 @@ class WxPayAdapter extends Adaptee implements Target
      * @return array|mixed
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public
-    function unionpayNative($out_trade_no, $total_fee, $body, $ip = "127.0.0.1", $return_url = "")
+    public function unionpayNative($trade_no, $out_trade_no, $total_fee, $body, $ip = "127.0.0.1", $return_url = "")
     {
         //todo 暂时不支持该支付方式
         return ['error_code' => 888888, 'err_code_dsc' => '系统暂时不支持该支付方式'];
@@ -496,14 +504,14 @@ class WxPayAdapter extends Adaptee implements Target
      * trade.unionpay.micropay
      * 银联刷卡支付，调用统一下单接。
      *
+     * @param string $trade_no 交易流水号，随机生成, 每次请求都必须有, 建议用公共方法生成
      * @param string $out_trade_no
      * @param int $total_fee
      * @param string $body
      * @param string $ip
      * @return array
      */
-    public
-    function unionpayMicroPay($out_trade_no, $total_fee, $body, $ip = "127.0.0.1")
+    public function unionpayMicroPay($trade_no, $out_trade_no, $total_fee, $body, $ip = "127.0.0.1", $return_url = "")
     {
         //todo 暂时不支持该支付方式
         return ['error_code' => 888888, 'err_code_dsc' => '系统暂时不支持该支付方式'];
@@ -518,8 +526,7 @@ class WxPayAdapter extends Adaptee implements Target
      * @param string $xml
      * @return array|bool
      */
-    public
-    function verifySignCallBack($xml)
+    public function verifySignCallBack($xml)
     {
         return (new Adaptee($this->config))->asynchroNotice($xml);
     }
@@ -527,13 +534,15 @@ class WxPayAdapter extends Adaptee implements Target
     /**
      * 订单查询接口
      *
+     * @param string $trade_no 交易流水号，随机生成, 每次请求都必须有, 建议用公共方法生成
      * @param string $out_trade_no
      * @return array|mixed
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function orderQuery($out_trade_no)
+    public function orderQuery($trade_no, $out_trade_no)
     {
         $data = [
+            'tradeNo' => $trade_no,
             'mercOrdNo' => $out_trade_no, //订单单号
             'trxType' => '12001', //12001:B2C商城消费、12002:B2C商城消费合伙人模式、12005:用户缴费、12006:B2B商城消费、12007:B2B商城消费合伙人模式、12008:商品退款、19000:个人账户入金、19001:个人账户出金、19002:企业账户出金、19003:平台账户入金、19004:平台账户出金、21004:佣金分润、22007:平台缴费、22008:其他费用缴纳
         ];
@@ -553,7 +562,7 @@ class WxPayAdapter extends Adaptee implements Target
                 'time_end' => $result['body']['tradt'] . $result['body']['tratm'],
                 'total_fee' => $result['body']['otratm'],
                 'trade_state' => "SUCCESS",
-                'trade_type' => "",
+                'trade_type' => $this->changePayType($result['body']['payTyp']),
                 'transaction_id' => $result['body']['jrnno'],
             ];
         } else {
@@ -563,7 +572,9 @@ class WxPayAdapter extends Adaptee implements Target
 
     /**
      * 订单退款接口
+     * 注意：如果不填手续费，那么手续费将由商户承担
      *
+     * @param string $trade_no 交易流水号，随机生成, 每次请求都必须有, 建议用公共方法生成
      * @param string $out_trade_no
      * @param string $out_refund_no
      * @param int $total_fee
@@ -572,14 +583,11 @@ class WxPayAdapter extends Adaptee implements Target
      * @return array|mixed
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function orderRefund($out_trade_no, $out_refund_no, $total_fee, $refund_fee, $goods_str, $goods_ids_str, $remark='伊的家商城订单退款')
+    public function orderRefund($trade_no, $out_trade_no, $out_refund_no, $total_fee, $refund_fee, $body)
     {
-        /**
-         * 退款申请
-         * 注意：如果不填手续费，那么手续费将由商户承担
-         */
+        list($goods_str, $goods_ids_str, $remark) = explode(";", $body);
         $data = [
-            'tradeNo' => 't2019091718173156418',
+            'tradeNo' => $trade_no,
             'refundOrdNo' => $out_refund_no,
             'trxType' => '12008', //12008:商品退款，12014:佣金退款
             'operType' => $total_fee == $refund_fee ? '21' : '22', //针对子订单，子订单退全额就是全额退款
@@ -620,13 +628,15 @@ class WxPayAdapter extends Adaptee implements Target
     /**
      * 订单退款进度查询接口
      *
+     * @param string $trade_no 交易流水号，随机生成, 每次请求都必须有, 建议用公共方法生成
      * @param string $out_trade_no
      * @return array|mixed
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function orderRefundQuery($out_trade_no, $out_refund_no)
+    public function orderRefundQuery($trade_no, $out_trade_no, $out_refund_no)
     {
         $data = [
+            'tradeNo' => $trade_no,
             'mercOrdNo' => $out_trade_no, //交易订单单号
             'mercRfOrdNo' => $out_refund_no, //退款订单单号
             'trxType' => '12008', //12001:B2C商城消费、12002:B2C商城消费合伙人模式、12005:用户缴费、12006:B2B商城消费、12007:B2B商城消费合伙人模式、12008:商品退款、19000:个人账户入金、19001:个人账户出金、19002:企业账户出金、19003:平台账户入金、19004:平台账户出金、21004:佣金分润、22007:平台缴费、22008:其他费用缴纳
