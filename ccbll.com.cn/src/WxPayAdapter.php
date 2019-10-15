@@ -52,14 +52,14 @@ class WxPayAdapter extends Adaptee implements Target
             'payType' => $payType,
             'mercOrdNo' => $data['out_trade_no'],
             'trxType' => '12001',//业务类型包括：12001:B2C商城消费、12002:B2C商城消费合伙人模式、12006:B2B商城消费、12007:B2B商城消费合伙人模式
-            'trAmt' => $data['total_fee'] * 100,
+            'trAmt' => $data['total_fee'],
             'tradt' => date('Ymd'), //交易日期
             'tratm' => date('His'), //交易时间
             'pageRetUrl' => $data['return_url'], //页面返回url
             'bgRetUrl' => $this->config['callback_url'],   //后台通知url
             'ccy' => 'CNY',
-            'platFeeAmt' => $data['total_fee'] * 10 * 0.10,
-            'prdSumAmt' => $data['total_fee'] * 100,
+            'platFeeAmt' => round($data['total_fee'] * 0.1),
+            'prdSumAmt' => $data['total_fee'],
             'cnt' => 1,
             'Lists' => [
                 [
@@ -68,8 +68,8 @@ class WxPayAdapter extends Adaptee implements Target
                     'tradeNm' => $goods_str,    //填产品商品串
                     'tradeRmk' => $goods_ids_str,   //填产品ID
                     'tradeNum' => $quantity,   //填写产品总数量
-                    'tradeAmt' => $data['total_fee'] * 100,
-                    'platFeeAmt1' => $data['total_fee'] * 10 * 0.10,
+                    'tradeAmt' => $data['total_fee'],
+                    'platFeeAmt1' => round($data['total_fee'] * 0.1),
                     'cMbl' => $customer_mobile,       //不填无法进行确认收货
                 ],
             ],
@@ -82,6 +82,33 @@ class WxPayAdapter extends Adaptee implements Target
             'rmk2' => $data['appid'] ?: "", //预留字段2，微信小程序/微信公众号支付时必输，上送微信小程序/微信公众号的APPID
             'rmk3' => $data['openid'] ?: "", //预留字段3,微信小程序/微信公众号支付时必输，上送微信小程序/微信公众号的用户子标识OPENID
         ];
+    }
+
+    /**
+     * 转换支付类型
+     * @param   [type] $payType                 [description]
+     * @return  [type]                          [description]
+     */
+    private function changePayType($payType)
+    {
+        $payTypes = [
+            'C' => 'trade.weixin.apppay',  //C:微信APP支付
+            'D' => 'trade.alipay.apppay',  //D:支付宝APP支付
+            'H' => 'trade.unionpay.native',  //H:一码付（H5二维码）
+            'I' => 'trade.weixin.native',  //I:微信扫码支付
+            'J' => 'trade.weixin.jspay',  //J:微信公众号支付
+            'K' => '',  //K:建行信用卡分期支付
+            'L' => '',  //L:银联在线
+            'M' => '',  //M:建行网关对公
+            'N' => '',  //N:建行网关对私
+            'P' => 'trade.alipay.native',  //P:支付宝扫码
+            'Q' => '',  //Q:一码付（自定义二维码）
+            'R' => '',  //R:龙支付扫码
+            'S' => '',  //S:龙支付APP支付
+            'W' => 'trade.weixin.mppay',  //W:微信小程序支付
+        ];
+
+        return $payTypes[$payType];
     }
 
     /**
@@ -504,8 +531,7 @@ class WxPayAdapter extends Adaptee implements Target
      * @return array|mixed
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public
-    function orderQuery($out_trade_no)
+    public function orderQuery($out_trade_no)
     {
         $data = [
             'mercOrdNo' => $out_trade_no, //订单单号
@@ -514,21 +540,21 @@ class WxPayAdapter extends Adaptee implements Target
         $result = (new Adaptee($this->config))->tradeQuery($data);
         if ($result && $result['body']['rstCode'] == "0") {
             return [
-                'bank_no' => "65101018120191014150496892",
-                'bank_type' => "WEIXIN_XCX",
-                'cash_fee' => "16600",
-                'fee_type' => "CNY",
+                'bank_no' => "",
+                'bank_type' => "",
+                'cash_fee' => $result['body']['actTramt'],
+                'fee_type' => $result['body']['ccy'],
                 'out_trade_no' => $result['body']['mercOrdNo'],
                 'result_code' => "SUCCESS",
                 'return_code' => "SUCCESS",
-                'sign' => "C2E765B8961BE763A6E770F3FAC87EBD",
-                'sub_openid' => "oVqkD0ZAQOLN3TcPaoAlAPLG7F4w",
-                'third_trans_id' => "100219101476335989",
-                'time_end' => "20191014150647",
-                'total_fee' => "16600",
+                'sign' => $result['info']['salt'],
+                'sub_openid' => "",
+                'third_trans_id' => "",
+                'time_end' => $result['body']['tradt'] . $result['body']['tratm'],
+                'total_fee' => $result['body']['otratm'],
                 'trade_state' => "SUCCESS",
-                'trade_type' => "trade.weixin.mppay",
-                'transaction_id' => "2638474520191014150318952"
+                'trade_type' => "",
+                'transaction_id' => $result['body']['jrnno'],
             ];
         } else {
             return ['err_code' => $result['info']['retCode'], "err_code_des" => $result['info']['errMsg']];
@@ -546,8 +572,7 @@ class WxPayAdapter extends Adaptee implements Target
      * @return array|mixed
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public
-    function orderRefund($out_trade_no, $out_refund_no, $total_fee, $refund_fee)
+    public function orderRefund($out_trade_no, $out_refund_no, $total_fee, $refund_fee, $goods_str, $goods_ids_str, $remark='伊的家商城订单退款')
     {
         /**
          * 退款申请
@@ -555,25 +580,38 @@ class WxPayAdapter extends Adaptee implements Target
          */
         $data = [
             'tradeNo' => 't2019091718173156418',
-            'refundOrdNo' => 'th0110919091817',
+            'refundOrdNo' => $out_refund_no,
             'trxType' => '12008', //12008:商品退款，12014:佣金退款
-            'operType' => '21', //针对子订单，子订单退全额就是全额退款
-            'oriOrdNo' => 'd0110919091817',
-            'oriOrdAmt' => 2,
+            'operType' => $total_fee == $refund_fee ? '21' : '22', //针对子订单，子订单退全额就是全额退款
+            'oriOrdNo' => $out_trade_no,
+            'oriOrdAmt' => $refund_fee,
             'refundDt' => date('Ymd'),
             'refundTm' => date('His'),
-            'tradeOrdNo' => 'd0110919091817',
-            'tradeNm' => 'HC01益生菌洁护牙膏',
-            'tradeRmk' => 'HC01益生菌洁护牙膏',
+            'tradeOrdNo' => $out_trade_no,
+            'tradeNm' => $goods_str,
+            'tradeRmk' => $goods_ids_str,
             'tradeNum' => 1,
-            'tradeAmt' => 2,
-            'feeAmt' => 1, //填了手续费由平台承担，不填有商户承担
-            'platFeeAmt1' => 1, //填了手续费由平台承担，不填有商户承担
-            'remark' => '退款测试',
+            'tradeAmt' => $refund_fee,
+            'feeAmt' => round($refund_fee * 0.1), //填了手续费由平台承担，不填有商户承担
+            'platFeeAmt1' => round($refund_fee * 0.1), //填了手续费由平台承担，不填有商户承担
+            'remark' => $remark,
         ];
         $result = (new Adaptee($this->config))->refund($data);
         if ($result && $result['body']['rstCode'] == "0") {
-
+            return [
+                'mch_id' => '',
+                'out_refund_no' => $out_refund_no,
+                'out_trade_no' => $out_trade_no,
+                'refund_channel' => 'ORIGINAL',
+                'refund_fee' => $refund_fee,
+                'refund_id' => $result['body']['jrnno'],
+                'result_code' => 'SUCCESS',
+                'return_code' => 'SUCCESS',
+                'sign' => $result['info']['salt'],
+                'third_trans_id' => '',
+                'total_fee' => $total_fee,
+                'transaction_id' => $result['body']['jrnno'],
+            ];
         } else {
             return ['err_code' => $result['info']['retCode'], "err_code_des" => $result['info']['errMsg']];
         }
@@ -586,33 +624,33 @@ class WxPayAdapter extends Adaptee implements Target
      * @return array|mixed
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public
-    function orderRefundQuery($out_trade_no)
+    public function orderRefundQuery($out_trade_no, $out_refund_no)
     {
         $data = [
-            'mercOrdNo' => $out_trade_no, //订单单号
-            'trxType' => '12001', //12001:B2C商城消费、12002:B2C商城消费合伙人模式、12005:用户缴费、12006:B2B商城消费、12007:B2B商城消费合伙人模式、12008:商品退款、19000:个人账户入金、19001:个人账户出金、19002:企业账户出金、19003:平台账户入金、19004:平台账户出金、21004:佣金分润、22007:平台缴费、22008:其他费用缴纳
+            'mercOrdNo' => $out_trade_no, //交易订单单号
+            'mercRfOrdNo' => $out_refund_no, //退款订单单号
+            'trxType' => '12008', //12001:B2C商城消费、12002:B2C商城消费合伙人模式、12005:用户缴费、12006:B2B商城消费、12007:B2B商城消费合伙人模式、12008:商品退款、19000:个人账户入金、19001:个人账户出金、19002:企业账户出金、19003:平台账户入金、19004:平台账户出金、21004:佣金分润、22007:平台缴费、22008:其他费用缴纳
         ];
         $result = (new Adaptee($this->config))->tradeQuery($data);
         if ($result && $result['body']['rstCode'] == "0") {
             return [
-                'cash_fee' => "517490",
-                'fee_type' => "CNY",
-                'mch_id' => "26384745",
-                'out_refund_no_0' => "d0235A19070040",
-                'out_trade_no' => "d0235A19070040",
+                'cash_fee' => $result['body']['actTramt'],
+                'fee_type' => $result['body']['ccy'],
+                'mch_id' => "",
+                'out_refund_no_0' => $out_refund_no,
+                'out_trade_no' => $out_trade_no,
                 'refund_channel_0' => "ORIGINAL",
-                'refund_count' => "1",
-                'refund_fee_0' => "517490",
-                'refund_id_0' => "2638474520190803190051771",
+                'refund_count' => $result['body']['retNum'],
+                'refund_fee_0' => $result['body']['refundAmt'],
+                'refund_id_0' => $result['body']['jrnno'],
                 'refund_status_0' => "SUCCESS",
-                'refund_success_time_0' => "20190803191601",
-                'result_code' => "SUCCESS",//不能动
-                'return_code' => "SUCCESS",//不能动
-                'sign' => "5C2857ECC8E31C1C31702841F15E3FA2",
-                'third_trans_id' => "100219073015835882",
-                'total_fee' => "517490",
-                'transaction_id' => "2638474520190730110026983"
+                'refund_success_time_0' => $result['body']['tradt'] . $result['body']['tratm'],
+                'result_code' => "SUCCESS",
+                'return_code' => "SUCCESS",
+                'sign' => $result['info']['salt'],
+                'third_trans_id' => "",
+                'total_fee' => $result['body']['otratm'],
+                'transaction_id' => $result['body']['jrnno'],
             ];
         } else {
             return ['err_code' => $result['info']['retCode'], "err_code_des" => $result['info']['errMsg']];
