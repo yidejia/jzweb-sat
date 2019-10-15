@@ -2,14 +2,6 @@
 
 namespace jzweb\sat\ccbll;
 
-use jzweb\sat\ccbll\Handler\Check;
-use jzweb\sat\ccbll\Handler\KeyManage;
-use jzweb\sat\ccbll\Handler\Merchant;
-use jzweb\sat\ccbll\Handler\Notice;
-use jzweb\sat\ccbll\Handler\Query;
-use jzweb\sat\ccbll\Handler\Trade;
-use jzweb\sat\ccbll\Handler\Transfer;
-
 /**
  * 龙存管官方操作SDK
  *
@@ -93,6 +85,164 @@ class WxPayAdapter extends Adaptee implements Target
     }
 
     /**
+     *文件上传
+     *
+     * @param url $file_url 软链接，外部可访问
+     * @param string $oper_type 操作类型：01:新增，02:修改，默认为01
+     * @return array
+     */
+    public function uploadFile($file_url, $oper_type = "01")
+    {
+        $data = [
+            "tradeNo" => "m2019090318350376998", //交易流水号，随机生成, 每次请求都必须有, 建议用公共方法生成
+            "fileUrl" => $file_url,
+            "fileType" => "01", //文件格式:01:图片,02:PDF文件
+            "operType" => $oper_type,
+        ];
+
+        $result = (new Adaptee($this->config))->fileUpload($data);
+        if ($result && $result['body']['rstCode'] == "0") {
+            return ['return_code' => "SUCCESS", 'return_msg' => $result['body']['fileId']];
+        } else {
+            return ['err_code' => $result['info']['retCode'], "err_code_des" => $result['info']['errMsg']];
+        }
+
+    }
+
+
+    /**
+     * 企业用户开电子登记簿
+     * 必须有页面支撑，无法再测试用例里面直接调用
+     * 会跳到建行页面输入结算账户名，结算卡号，交易密码，以及打款验证
+     *
+     * @param int $entity_id 后台单位ID
+     * @param string $entity_name 后台单位名称
+     * @param string $legal 公司法人
+     * @param string $legal_id_card 公司法人身份证
+     * @param string $agent 联系人
+     * @param string $agent_id_card 联系人身份证
+     * @param int $agent_mobile 联系人的手机号码
+     * @param string $buss_pic_id 公司营业执照
+     * @param string $legal_front_pic_id 法人身份证正面
+     * @param string $legal_back_pic_id 法人身份证反面
+     * @param string $cert_pic_id 授权书图片ID
+     * @param int $role_id 存管企业角色:100:企业店铺、101：企业买家、002:个体工商户店铺、300:交易市场物流企业、310:交易市场仓储企业
+     * @param string $registrant 注册人身份，1:法定代表人、2:授权人
+     * @param int $acc_type //账户类型，1:对私,2:对公
+     * @param bool $is_mobile_view
+     * @param string $return_url
+     */
+    public function createAccountByWeb($entity_id, $entity_name, $legal, $legal_id_card, $agent, $agent_id_card, $agent_mobile, $buss_pic_id, $legal_front_pic_id, $legal_back_pic_id, $cert_pic_id = "", $role_id = "100", $registrant = 1, $acc_type = 2, $is_mobile_view = false, $return_url = "")
+    {
+
+        $data = [
+            'tradeNo' => 'm2019090318350376998',
+            'platCusNO' => $entity_id,
+            'platRoleID' => $role_id,
+            'busFullNm' => $entity_name,
+            'registrant' => $registrant,
+            'legalPerNm' => $legal,
+            'legalPerIdNo' => $legal_id_card,
+            'agent' => $agent,
+            'agentIdNo' => $agent_id_card,
+            'agentMbl' => $agent_mobile,
+            'accType' => $acc_type,
+            'pageRetUrl' => $return_url,
+            'bgRetUrl' => $this->config['callback_url'],
+            'bussLicenseID' => $buss_pic_id,
+            'legalFrontPic' => $legal_front_pic_id,
+            'legalBackPic' => $legal_back_pic_id,
+            'certPic' => $cert_pic_id,
+        ];
+        (new Adaptee($this->config))->merchantAccount($data, $is_mobile_view);
+    }
+
+    /**
+     * 企业用户信息变更
+     * 会有两次异步通知，申请成功，审核成功，依据流水号reqSn识别，所以要记录当时请求的流水号reqSn
+     * 或者单独一个接收通知接口
+     *
+     * @param $mch_code
+     * @param $cert_pic_id
+     * @param string $oper_type //12:银行账户开户行行号变更、13:银行账户开户行名称变更、14.法人变更、15.银行账号变更、23:被授权人变更
+     * @param bool $is_mobile_view
+     * @param string $return_url
+     */
+    public function merchantInfoChangeByWeb($mch_code, $cert_pic_id, $oper_type = "23", $is_mobile_view = false, $return_url = "")
+    {
+        $data = [
+            'tradeNo' => 'm2019092016014761149',
+            'mbrCode' => $mch_code,
+            'operType' => $oper_type,
+            'pageRetUrl' => $return_url, //页面返回url
+            'bgRetUrl' => $this->config['callback_url'],   //后台通知url
+            'agent' => '刘建国',
+            'agentIdType' => '01',
+            'agentIdNo' => '430524198509243270',
+            'agentMbl' => '13450418400',
+            'certPic' => $cert_pic_id, //被授权书图片ID，上送文件获得，授权书模版找建行业务员要
+        ];
+        (new Adaptee($this->config))->merchantInfoChange($data, $is_mobile_view);
+    }
+
+
+    /**
+     * 用户电子登记簿状态变更
+     * 锁定、解锁：指的是这个用户什么操作都不能做
+     * 冻结、解冻：指的是  关于资金类的交易  无法进行
+     *
+     * @param string $mch_code
+     * @param string $comments
+     * @param string $effDate
+     * @param string $expDate
+     * @param string $oper_type 操作类型包括：04:锁定、05:解锁、06:冻结、07:解冻
+     * @param bool $is_mobile_view 标记是否是移动端访问,默认否
+     */
+    public function accountStatusChange($mch_code, $comments, $effDate = "", $expDate = "", $oper_type = "04", $is_mobile_view = false)
+    {
+
+        $data = [
+            'tradeNo' => 'm2019092016014761149',
+            'mbrCode' => $mch_code,
+            'operType' => $oper_type,
+            'effectiveFlag' => 'Y', //是否立刻生效，Y:是、N:否
+            'effDt' => $effDate ? date('Ymd', strtotime($effDate)) : date('Ymd'), //生效日期，当为立刻生效时，此栏位允许为空
+            'effTm' => $effDate ? date('His', strtotime($effDate)) : date('His'), //生效时间，当为立刻生效时，此栏位允许为空
+            'expDt' => $effDate ? date('Ymd', strtotime($expDate)) : '20990101', //失效日期 允许为空
+            'expTm' => $effDate ? date('His', strtotime($expDate)) : '000000', //失效时间 允许为空
+            'rmk1' => $comments, //变更原因
+        ];
+        $result = (new Adaptee($this->config))->accountStatusChange($data, $is_mobile_view);
+        if ($result && $result['body']['rstCode'] == "0") {
+            return $result;
+        } else {
+            return ['err_code' => $result['info']['retCode'], "err_code_des" => $result['info']['errMsg']];
+        }
+    }
+
+
+    /**
+     * 交易密码重置
+     *
+     * @param $mch_code
+     * @param string $oper_type 17:交易密码修改、18:交易密码重置
+     * @param bool $is_mobile_view 标记是否是移动端访问,默认否
+     * @param string $return_url
+     */
+    public function restPwdByWeb($mch_code, $oper_type = "17", $is_mobile_view = false, $return_url = "")
+    {
+
+        $data = [
+            'tradeNo' => 'm2019092016014761149',
+            'mbrCode' => $mch_code,
+            'operType' => $oper_type,
+            'pageRetUrl' => $return_url, //页面返回url
+            'bgRetUrl' => $this->config['callback_url'],   //后台通知url
+        ];
+        (new Adaptee($this->config))->passwordSetting($data, $is_mobile_view);
+    }
+
+    /**
      * 微信公众号支付
      *
      * @param string $appid
@@ -104,10 +254,11 @@ class WxPayAdapter extends Adaptee implements Target
      * @param string $return_url
      * @return array|mixed|void
      */
-    public function weixinJsPay($appid, $openid, $out_trade_no, $total_fee, $body, $ip = "127.0.0.1", $return_url = "")
+    public
+    function weixinJsPay($appid, $openid, $out_trade_no, $total_fee, $body, $ip = "127.0.0.1", $return_url = "")
     {
-        $data = $this->buildRequestParams(self::PAYTYPE_I, func_get_args());
-        return (new Adaptee($this->config))->anonyPay($data);
+        //todo 暂时不支持该支付方式
+        return ['error_code' => 888888, 'err_code_dsc' => '系统暂时不支持该支付方式'];
     }
 
     /**
@@ -121,7 +272,8 @@ class WxPayAdapter extends Adaptee implements Target
      * @return array|mixed
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function weixiNative($out_trade_no, $total_fee, $body, $ip = "127.0.0.1")
+    public
+    function weixiNative($out_trade_no, $total_fee, $body, $ip = "127.0.0.1")
     {
         $data = $this->buildRequestParams(self::PAYTYPE_J, func_get_args());
         return (new Adaptee($this->config))->anonyPay($data);
@@ -140,10 +292,11 @@ class WxPayAdapter extends Adaptee implements Target
      * @return array|mixed
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function weixinAppPay($out_trade_no, $total_fee, $body, $ip = "127.0.0.1", $return_url = "")
+    public
+    function weixinAppPay($out_trade_no, $total_fee, $body, $ip = "127.0.0.1", $return_url = "")
     {
-        $data = $this->buildRequestParams(self::PAYTYPE_C, func_get_args());
-        return (new Adaptee($this->config))->anonyPay($data);
+        //todo 暂时不支持该支付方式
+        return ['error_code' => 888888, 'err_code_dsc' => '系统暂时不支持该支付方式'];
     }
 
     /**
@@ -158,7 +311,8 @@ class WxPayAdapter extends Adaptee implements Target
      * @return array|mixed
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function weixinAppPay2($out_trade_no, $total_fee, $body, $ip = "127.0.0.1")
+    public
+    function weixinAppPay2($out_trade_no, $total_fee, $body, $ip = "127.0.0.1")
     {
         $data = $this->buildRequestParams(self::PAYTYPE_C, func_get_args());
         return (new Adaptee($this->config))->anonyPay($data);
@@ -176,7 +330,8 @@ class WxPayAdapter extends Adaptee implements Target
      * @return array|mixed
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function weixinH5Pay($out_trade_no, $total_fee, $body, $ip = "127.0.0.1", $return_url = "")
+    public
+    function weixinH5Pay($out_trade_no, $total_fee, $body, $ip = "127.0.0.1", $return_url = "")
     {
         //todo 暂时不支持该支付方式
         return ['error_code' => 888888, 'err_code_dsc' => '系统暂时不支持该支付方式'];
@@ -196,7 +351,8 @@ class WxPayAdapter extends Adaptee implements Target
      * @return array|mixed
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function weixinMpPay($appid, $openid, $out_trade_no, $total_fee, $body, $ip = "127.0.0.1", $return_url = "")
+    public
+    function weixinMpPay($appid, $openid, $out_trade_no, $total_fee, $body, $ip = "127.0.0.1", $return_url = "")
     {
         $data = $this->buildRequestParams(self::PAYTYPE_W, func_get_args());
         return (new Adaptee($this->config))->anonyPay($data);
@@ -212,7 +368,8 @@ class WxPayAdapter extends Adaptee implements Target
      * @param string $ip
      * @return array
      */
-    public function weixinMicroPay($out_trade_no, $total_fee, $body, $ip = "127.0.0.1")
+    public
+    function weixinMicroPay($out_trade_no, $total_fee, $body, $ip = "127.0.0.1")
     {
         //todo 暂时不支持该支付方式
         return ['error_code' => 888888, 'err_code_dsc' => '系统暂时不支持该支付方式'];
@@ -229,7 +386,8 @@ class WxPayAdapter extends Adaptee implements Target
      * @return array|mixed
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function alipayNative($out_trade_no, $total_fee, $body, $ip = "127.0.0.1")
+    public
+    function alipayNative($out_trade_no, $total_fee, $body, $ip = "127.0.0.1")
     {
         $data = $this->buildRequestParams(self::PAYTYPE_P, func_get_args());
         return (new Adaptee($this->config))->anonyPay($data);
@@ -245,7 +403,8 @@ class WxPayAdapter extends Adaptee implements Target
      * @param string $ip
      * @return array
      */
-    public function alipayJsPay($out_trade_no, $total_fee, $body, $ip = "127.0.0.1")
+    public
+    function alipayJsPay($out_trade_no, $total_fee, $body, $ip = "127.0.0.1")
     {
         //todo 暂时不支持该支付方式
         return ['error_code' => 888888, 'err_code_dsc' => '系统暂时不支持该支付方式'];
@@ -263,7 +422,8 @@ class WxPayAdapter extends Adaptee implements Target
      * @return array|mixed
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function alipayH5Pay($out_trade_no, $total_fee, $body, $ip = "127.0.0.1", $return_url = "")
+    public
+    function alipayH5Pay($out_trade_no, $total_fee, $body, $ip = "127.0.0.1", $return_url = "")
     {
         //todo 暂时不支持该支付方式
         return ['error_code' => 888888, 'err_code_dsc' => '系统暂时不支持该支付方式'];
@@ -279,7 +439,8 @@ class WxPayAdapter extends Adaptee implements Target
      * @param string $ip
      * @return array
      */
-    public function alipayMicroPay($out_trade_no, $total_fee, $body, $ip = "127.0.0.1")
+    public
+    function alipayMicroPay($out_trade_no, $total_fee, $body, $ip = "127.0.0.1")
     {
         //todo 暂时不支持该支付方式
         return ['error_code' => 888888, 'err_code_dsc' => '系统暂时不支持该支付方式'];
@@ -297,7 +458,8 @@ class WxPayAdapter extends Adaptee implements Target
      * @return array|mixed
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function unionpayNative($out_trade_no, $total_fee, $body, $ip = "127.0.0.1", $return_url = "")
+    public
+    function unionpayNative($out_trade_no, $total_fee, $body, $ip = "127.0.0.1", $return_url = "")
     {
         //todo 暂时不支持该支付方式
         return ['error_code' => 888888, 'err_code_dsc' => '系统暂时不支持该支付方式'];
@@ -313,7 +475,8 @@ class WxPayAdapter extends Adaptee implements Target
      * @param string $ip
      * @return array
      */
-    public function unionpayMicroPay($out_trade_no, $total_fee, $body, $ip = "127.0.0.1")
+    public
+    function unionpayMicroPay($out_trade_no, $total_fee, $body, $ip = "127.0.0.1")
     {
         //todo 暂时不支持该支付方式
         return ['error_code' => 888888, 'err_code_dsc' => '系统暂时不支持该支付方式'];
@@ -328,7 +491,8 @@ class WxPayAdapter extends Adaptee implements Target
      * @param string $xml
      * @return array|bool
      */
-    public function verifySignCallBack($xml)
+    public
+    function verifySignCallBack($xml)
     {
         return (new Adaptee($this->config))->asynchroNotice($xml);
     }
@@ -340,7 +504,8 @@ class WxPayAdapter extends Adaptee implements Target
      * @return array|mixed
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function orderQuery($out_trade_no)
+    public
+    function orderQuery($out_trade_no)
     {
         $data = [
             'mercOrdNo' => $out_trade_no, //订单单号
@@ -381,7 +546,8 @@ class WxPayAdapter extends Adaptee implements Target
      * @return array|mixed
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function orderRefund($out_trade_no, $out_refund_no, $total_fee, $refund_fee)
+    public
+    function orderRefund($out_trade_no, $out_refund_no, $total_fee, $refund_fee)
     {
         /**
          * 退款申请
@@ -420,7 +586,8 @@ class WxPayAdapter extends Adaptee implements Target
      * @return array|mixed
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function orderRefundQuery($out_trade_no)
+    public
+    function orderRefundQuery($out_trade_no)
     {
         $data = [
             'mercOrdNo' => $out_trade_no, //订单单号
