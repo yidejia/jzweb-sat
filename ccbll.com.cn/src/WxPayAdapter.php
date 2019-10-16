@@ -246,7 +246,7 @@ class WxPayAdapter extends Adaptee implements Target
         ];
         $result = (new Adaptee($this->config))->accountStatusChange($data, $is_mobile_view);
         if ($result && $result['body']['rstCode'] == "0") {
-            return $result;
+            return $result['body'];
         } else {
             return ['err_code' => $result['info']['retCode'], "err_code_des" => $result['info']['errMsg']];
         }
@@ -327,8 +327,7 @@ class WxPayAdapter extends Adaptee implements Target
      * @return array|mixed
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public
-    function weixinAppPay($trade_no, $out_trade_no, $total_fee, $body, $ip = "127.0.0.1", $return_url = "")
+    public function weixinAppPay($trade_no, $out_trade_no, $total_fee, $body, $ip = "127.0.0.1", $return_url = "")
     {
         //todo 暂时不支持该支付方式
         return ['error_code' => 888888, 'err_code_dsc' => '系统暂时不支持该支付方式'];
@@ -667,5 +666,102 @@ class WxPayAdapter extends Adaptee implements Target
         }
     }
 
+    /**
+     * 发货通知
+     * @param   string $trade_no                [交易流水号]
+     * @param   string $mch_code                [龙存管商户号]
+     * @param   string $out_trade_no            [交易订单号]
+     * @param   string $trxType                 [业务类型,12003:商城收货确认]
+     * @param   string $remark                  [备注]
+     * @return  array|mixed
+     */
+    public function goodsNotice($trade_no, $mch_code, $out_trade_no, $trxType = '12003', $remark = '')
+    {
+        $data = [
+            'tradeNo' => $trade_no,
+            'mbrCode' => $mch_code,
+            'trxType' => $trxType,
+            'oriOrdNo' => $out_trade_no,
+            'tradeOrdNo' => $out_trade_no,
+            'remark' => $remark,
+        ];
+        $result = (new Adaptee($this->config))->goodsNotice($data);
+        if ($result && $result['body']['rstCode'] == "0") {
+            return [
+                'result_code' => 'SUCCESS',
+                'return_code' => 'SUCCESS',
+                'jrnno' => $result['body']['jrnno'],
+            ];
+        } else {
+            return ['err_code' => $result['info']['retCode'], "err_code_des" => $result['info']['errMsg']];
+        }
+    }
 
+    /**
+     * 超时后平台代为确认收货
+     * @param   string $trade_no                [交易流水号]
+     * @param   string $mch_code                [龙存管商户号]
+     * @param   string $jrnno                   [龙存管订单流水号]
+     * @param   string $out_trade_no            [交易订单号]
+     * @param   string $total_fee               [交易金额]
+     * @param   string $trxType                 [业务类型,12010:平台确认收货]
+     * @return  array|mixed
+     */
+    public function insteadToConfirm($trade_no, $mch_code, $jrnno, $out_trade_no, $total_fee, $trxType = '12010')
+    {
+        $data = [
+            'tradeNo' => $trade_no,
+            'mbrCode' => $mch_code,
+            'trxType' => $trxType,
+            'jrnno' => $jrnno,
+            'ordNo' => $out_trade_no,
+            'traAmt' => $total_fee,
+            'tradt' => date('Ymd'),
+            'tratm' => date('His'),
+        ];
+        $result = (new Adaptee($this->config))->goodsNotice($data);
+        if ($result && $result['body']['rstCode'] == "0") {
+            return [
+                'result_code' => 'SUCCESS',
+                'return_code' => 'SUCCESS',
+                'jrnno' => $result['body']['jrnno'],
+                'success_time' => $result['body']['tradt'] . $result['body']['tratm'],
+            ];
+        } else {
+            return ['err_code' => $result['info']['retCode'], "err_code_des" => $result['info']['errMsg']];
+        }
+    }
+
+    /**
+     * 用户确认
+     * @param   string $trade_no                [交易流水号]
+     * @param   string $mch_code                [龙存管商户号]
+     * @param   string $jrnno                   [龙存管订单流水号]
+     * @param   string $trxType                 [业务类型,12003:商城收货确认，12008:商品退款，12014:佣金退款；]
+     * @param   string $agreest                 [交易确认状态,Y:同意、N:不同意/延迟确认]
+     * @param   string $return_url              [页面返回url]
+     * @return  array|mixed
+     */
+    public function userToConfirm($trade_no, $mch_code, $jrnno, $trxType = '12008', $agreest = 'Y', $return_url = '')
+    {
+        $data = [
+            'tradeNo' => $trade_no,
+            'mbrCode' => $mch_code,
+            'trxType' => $trxType,
+            'jrnno' => $jrnno, //如果是收货确认，用发货通知的交易单号，如果是退款，用退款申请的交易单号
+            'agreest' => 'Y',
+            'pageRetUrl' => $return_url,
+            'bgRetUrl' => $this->config['callback_url'],
+        ];
+        $result = (new Adaptee($this->config))->goodsNotice($data);
+        if ($result && $result['body']['rstCode'] == "0") {
+            return [
+                'result_code' => 'SUCCESS',
+                'return_code' => 'SUCCESS',
+                'jrnno' => $result['body']['jrnno'],
+            ];
+        } else {
+            return ['err_code' => $result['info']['retCode'], "err_code_des" => $result['info']['errMsg']];
+        }
+    }
 }

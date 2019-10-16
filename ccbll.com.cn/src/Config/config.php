@@ -27,9 +27,12 @@ return [
             //Rsa私钥密码
             'private_key_keyword_path' => 'ccbll_private_key_keyword.txt',
             //api请求地址
-            'api_url' => 'http://58.249.123.36:38180/bhdep/payTransactionNew',
+            'api_url' => 'http://58.249.123.36:38180',
             //h5请求地址
-            'h5_url' => 'http://56.0.98.230:38180/bhdep/payTransactionNew',
+            // 'h5_url' => 'http://56.0.98.230:38180',
+            'h5_url' => 'https://lcg.murongtech.com',
+            //地址Query
+            'url_query' => '/bhdep/payTransactionNew',
             //回调地址
             'callback_url' => 'http://ccbll:38180/',
         ],
@@ -51,9 +54,12 @@ return [
             //Rsa私钥密码
             'private_key_keyword_path' => 'ccbll_private_key_keyword.txt',
             //api请求地址
-            'api_url' => 'http://58.249.123.36:38180/bhdep/payTransactionNew',
+            'api_url' => 'http://58.249.123.36:38180',
             //h5请求地址
-            'h5_url' => 'http://56.0.98.230:38180/bhdep/payTransactionNew',
+            // 'h5_url' => 'http://56.0.98.230:38180',
+            'h5_url' => 'https://lcg.murongtech.com',
+            //地址Query
+            'url_query' => '/bhdep/payTransactionNew',
             //回调地址
             'callback_url' => 'http://ccbll:38180/',
 
@@ -76,9 +82,12 @@ return [
             //Rsa私钥密码
             'private_key_keyword_path' => 'ccbll_private_key_keyword.txt',
             //api请求地址
-            'api_url' => 'http://58.249.123.36:38180/bhdep/payTransactionNew',
+            'api_url' => 'http://58.249.123.36:38180',
             //h5请求地址
-            'h5_url' => 'http://56.0.98.230:38180/bhdep/payTransactionNew',
+            // 'h5_url' => 'http://56.0.98.230:38180',
+            'h5_url' => 'https://lcg.murongtech.com',
+            //地址Query
+            'url_query' => '/bhdep/payTransactionNew',
             //回调地址
             'callback_url' => 'http://ccbll:38180/',
         ],
@@ -100,9 +109,12 @@ return [
             //Rsa私钥密码
             'private_key_keyword_path' => 'ccbll_private_key_keyword.txt',
             //api请求地址
-            'api_url' => 'http://58.249.123.36:38180/bhdep/payTransactionNew',
+            'api_url' => 'http://58.249.123.36:38180',
             //h5请求地址
-            'h5_url' => 'http://56.0.98.230:38180/bhdep/payTransactionNew',
+            // 'h5_url' => 'http://56.0.98.230:38180',
+            'h5_url' => 'https://lcg.murongtech.com',
+            //地址Query
+            'url_query' => '/bhdep/payTransactionNew',
             //回调地址
             'callback_url' => 'http://ccbll:38180/',
         ],
