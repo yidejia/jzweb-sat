@@ -561,7 +561,7 @@ class WxPayAdapter extends Adaptee implements Target
                 'time_end' => $result['body']['tradt'] . $result['body']['tratm'],
                 'total_fee' => $result['body']['otratm'],
                 'trade_state' => "SUCCESS",
-                'trade_type' => $this->changePayType($result['body']['payTyp']),
+                'trade_type' => '',
                 'transaction_id' => $result['body']['jrnno'],
             ];
         } else {
