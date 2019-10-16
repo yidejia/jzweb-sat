@@ -178,7 +178,7 @@ class WxPayAdapter extends Adaptee implements Target
             'agentMbl' => $agent_mobile,
             'accType' => $acc_type,
             'pageRetUrl' => $return_url,
-            'bgRetUrl' => $this->config['notify_create_account'],
+            'bgRetUrl' => $this->config['callback_create_account_url'],
             'bussLicenseID' => $buss_pic_id,
             'legalFrontPic' => $legal_front_pic_id,
             'legalBackPic' => $legal_back_pic_id,
@@ -206,7 +206,7 @@ class WxPayAdapter extends Adaptee implements Target
             'mbrCode' => $mch_code,
             'operType' => $oper_type,
             'pageRetUrl' => $return_url, //页面返回url
-            'bgRetUrl' => $this->config['notify_update_account'],   //后台通知url
+            'bgRetUrl' => $this->config['callback_update_account_url'],   //后台通知url
             'agent' => '刘建国',
             'agentIdType' => '01',
             'agentIdNo' => '430524198509243270',
@@ -270,7 +270,7 @@ class WxPayAdapter extends Adaptee implements Target
             'mbrCode' => $mch_code,
             'operType' => $oper_type,
             'pageRetUrl' => $return_url, //页面返回url
-            'bgRetUrl' => $this->config['notify_rest_pay'],   //后台通知url
+            'bgRetUrl' => $this->config['callback_rest_pwd_url'],   //后台通知url
         ];
         (new Adaptee($this->config))->passwordSetting($data, $is_mobile_view);
     }
