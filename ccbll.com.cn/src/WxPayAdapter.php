@@ -56,7 +56,7 @@ class WxPayAdapter extends Adaptee implements Target
             'tradt' => date('Ymd'), //交易日期
             'tratm' => date('His'), //交易时间
             'pageRetUrl' => $data['return_url'], //页面返回url
-            'bgRetUrl' => $this->config['callback_url'],   //后台通知url
+            'bgRetUrl' => $this->config['callback_pay_url'],   //后台通知url
             'ccy' => 'CNY',
             'platFeeAmt' => round($data['total_fee'] * 0.1),
             'prdSumAmt' => $data['total_fee'],
@@ -178,7 +178,7 @@ class WxPayAdapter extends Adaptee implements Target
             'agentMbl' => $agent_mobile,
             'accType' => $acc_type,
             'pageRetUrl' => $return_url,
-            'bgRetUrl' => $this->config['callback_url'],
+            'bgRetUrl' => $this->config['notify_create_account'],
             'bussLicenseID' => $buss_pic_id,
             'legalFrontPic' => $legal_front_pic_id,
             'legalBackPic' => $legal_back_pic_id,
@@ -206,7 +206,7 @@ class WxPayAdapter extends Adaptee implements Target
             'mbrCode' => $mch_code,
             'operType' => $oper_type,
             'pageRetUrl' => $return_url, //页面返回url
-            'bgRetUrl' => $this->config['callback_url'],   //后台通知url
+            'bgRetUrl' => $this->config['notify_update_account'],   //后台通知url
             'agent' => '刘建国',
             'agentIdType' => '01',
             'agentIdNo' => '430524198509243270',
@@ -270,7 +270,7 @@ class WxPayAdapter extends Adaptee implements Target
             'mbrCode' => $mch_code,
             'operType' => $oper_type,
             'pageRetUrl' => $return_url, //页面返回url
-            'bgRetUrl' => $this->config['callback_url'],   //后台通知url
+            'bgRetUrl' => $this->config['notify_rest_pay'],   //后台通知url
         ];
         (new Adaptee($this->config))->passwordSetting($data, $is_mobile_view);
     }
@@ -751,7 +751,7 @@ class WxPayAdapter extends Adaptee implements Target
             'jrnno' => $jrnno, //如果是收货确认，用发货通知的交易单号，如果是退款，用退款申请的交易单号
             'agreest' => 'Y',
             'pageRetUrl' => $return_url,
-            'bgRetUrl' => $this->config['callback_url'],
+            'bgRetUrl' => $this->config['callback_user_confirm_url'],
         ];
         $result = (new Adaptee($this->config))->goodsNotice($data);
         if ($result && $result['body']['rstCode'] == "0") {
