@@ -552,7 +552,7 @@ class WxPayAdapter extends Adaptee implements Target
                 'bank_type' => "",
                 'cash_fee' => $result['body']['actTramt'],
                 'fee_type' => $result['body']['ccy'],
-                'out_trade_no' => $result['body']['mercOrdNo'],
+                'out_trade_no' => $out_trade_no,
                 'result_code' => "SUCCESS",
                 'return_code' => "SUCCESS",
                 'sign' => $result['info']['salt'],
@@ -599,8 +599,8 @@ class WxPayAdapter extends Adaptee implements Target
             'tradeRmk' => $goods_ids_str,
             'tradeNum' => 1,
             'tradeAmt' => $refund_fee,
-            'feeAmt' => round($refund_fee * 0.1), //填了手续费由平台承担，不填有商户承担
-            'platFeeAmt1' => round($refund_fee * 0.1), //填了手续费由平台承担，不填有商户承担
+            'feeAmt' => 0, //从商户余额账户扣除一笔手续费到平台账户，应保持为0
+            'platFeeAmt1' => round($refund_fee * 0.1), //填了手续费由平台承担，不填由商户承担
             'remark' => $remark,
         ];
         $result = (new Adaptee($this->config))->refund($data);
