@@ -1,6 +1,6 @@
 <?php
 
-namespace jzweb\sat;
+namespace jzweb\sat\jzpay;
 
 
 /**
