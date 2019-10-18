@@ -435,7 +435,7 @@ class Client implements JzPayInterface
      * @return array|mixed
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function orderRefund($trade_no, $out_trade_no, $out_refund_no, $total_fee, $refund_fee, $body)
+    public function orderRefund($trade_no, $out_trade_no, $out_refund_no, $total_fee, $refund_fee, $body = "伊的家商城订单")
     {
         list($goods_str, $goods_ids_str, $remark) = explode(";", $body);
         $data = [
