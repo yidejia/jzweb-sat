@@ -14,7 +14,7 @@ class JzPayClient
     private static $instance = [];
 
     /**
-     * 获取支付单例¬
+     * 获取支付单例
      *
      * @param string $driver 支付驱动(jppay|ccbpay)
      * @param array $config 支付配置

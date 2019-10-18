@@ -3,7 +3,7 @@
 namespace jzweb\sat\jppay;
 
 use jzweb\sat\jppay\Handler\JoinPay;
-use jzweb\sat\JzPayInterface;
+use jzweb\sat\jzpay\JzPayInterface;
 
 /**
  * 封装聚合支付操作SDK

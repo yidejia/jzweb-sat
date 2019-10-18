@@ -5,7 +5,7 @@ namespace jzweb\sat\ccbpay;
 use jzweb\sat\ccbll\Handler\Notice;
 use jzweb\sat\ccbll\Handler\Query;
 use jzweb\sat\ccbll\Handler\Trade;
-use jzweb\sat\JzPayInterface;
+use jzweb\sat\jzpay\JzPayInterface;
 
 /**
  * 龙存管官方操作SDK
