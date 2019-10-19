@@ -91,6 +91,7 @@ class Client implements JzPayInterface
         list($merc_no, $goods_str, $goods_ids_str, $quantity, $customer_mobile) = explode(";", $data['body']);
 
         $params = [
+            'tradeNo' => $data['trade_no'],
             'payType' => $payType,
             'mercOrdNo' => $data['out_trade_no'],
             'trxType' => $trxType,
@@ -201,8 +202,18 @@ class Client implements JzPayInterface
      */
     public function weixinAppPay2($trade_no, $out_trade_no, $total_fee, $body, $ip = "127.0.0.1", $return_url = "")
     {
-        $data = $this->buildRequestParams(self::PAYTYPE_C, func_get_args());
-        return (new Trade($this->config))->anonyPay($data);
+        return [
+            'result_code' => "SUCCESS",
+            'return_code' => "SUCCESS",
+            'package_json' => json_encode(
+                [
+                    'pay_type' => "ccbpay",
+                    "original_id" => $this->config['original_id'],
+                    "app_id" => $this->config['app_id'],
+                    "prepay_id" => md5(json_encode(func_get_args))
+                ]
+            )
+        ];
     }
 
     /**
@@ -241,8 +252,50 @@ class Client implements JzPayInterface
      */
     public function weixinMpPay($trade_no, $appid, $openid, $out_trade_no, $total_fee, $body, $ip = "127.0.0.1", $return_url = "")
     {
-        $data = $this->buildRequestParams(self::PAYTYPE_W, func_get_args());
-        return (new Trade($this->config))->anonyPay($data);
+
+        $params = [
+            'trade_no' => $trade_no,
+            'appid' => $appid,
+            'openid' => $openid,
+            'out_trade_no' => $out_trade_no,
+            'total_fee' => $total_fee,
+            'body' => $body,
+            'ip' => $ip,
+            'return_url' => $return_url
+        ];
+        $data = $this->buildRequestParams(self::PAYTYPE_W, $params);
+        $result = (new Trade($this->config))->anonyPay($data);
+        if ($result && $result['body']['rstCode'] == "0") {
+            $url = $result['body']['mercOrdMsg'];
+            if ($content = file_get_contents($url)) {
+                $package = json_decode($content, true);
+                if ($package['SUCCESS']) {
+                    return [
+                        'mch_id' => $package['partnerid'],
+                        'package_json' => json_encode(
+                            [
+                                'timeStamp' => $package['timeStamp'],
+                                'nonceStr' => $package['nonceStr'],
+                                'package' => $package['package'],
+                                'signType' => $package['signType'],
+                                'paySign' => $package['paySign']
+                            ]
+                        ),
+                        'prepay_id' => substr($package['package'], 9),
+                        'result_code' => "SUCCESS",
+                        'return_code' => "SUCCESS",
+                        'sign' => md5($result['info']['salt']),
+                        'trade_type' => $this->changePayType(self::PAYTYPE_W),
+                    ];
+                } else {
+                    return ['err_code' => 888889, "err_code_des" => "获取签名数据失败2"];
+                }
+            } else {
+                return ['err_code' => 888890, "err_code_des" => "获取签名数据失败1"];
+            }
+        } else {
+            return ['err_code' => $result['info']['retCode'], "err_code_des" => $result['info']['errMsg']];
+        }
     }
 
     /**
@@ -410,12 +463,12 @@ class Client implements JzPayInterface
                 'return_code' => "SUCCESS",
                 'sign' => $result['info']['salt'],
                 'sub_openid' => "",
-                'third_trans_id' => "",
+                'third_trans_id' => $result['body']['jrnno'],
                 'time_end' => $result['body']['tradt'] . $result['body']['tratm'],
                 'total_fee' => $result['body']['otratm'],
                 'trade_state' => "SUCCESS",
                 'trade_type' => '',
-                'transaction_id' => $result['body']['jrnno'],
+                'transaction_id' => $this->config['PID'] . $result['body']['jrnno'],
             ];
         } else {
             return ['err_code' => $result['info']['retCode'], "err_code_des" => $result['info']['errMsg']];
@@ -506,7 +559,7 @@ class Client implements JzPayInterface
                 'refund_count' => $result['body']['retNum'],
                 'refund_fee_0' => $result['body']['refundAmt'],
                 'refund_id_0' => $result['body']['jrnno'],
-                'refund_status_0' => "SUCCESS",
+                'refund_status_0' => $result['body']['traSts'] == "0" ? "SUCCESS" : ("PROCESSING" . $result['body']['traSts']),
                 'refund_success_time_0' => $result['body']['tradt'] . $result['body']['tratm'],
                 'result_code' => "SUCCESS",
                 'return_code' => "SUCCESS",

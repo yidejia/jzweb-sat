@@ -20,6 +20,10 @@ return [
             'dataType' => '2',
             //商户编号
             'PID' => '800020000010030',
+            //小程序原始id gh开头
+            'original_id' => "gh_abadasfasdf",
+            //微信开放平台应用id
+            "app_id" => "wx8123123sdf",
             //Rsa公钥
             'public_key_path' => DATA_DIR . 'ccbll/ccbll_public_key.pem',
             //Rsa私钥
@@ -55,6 +59,10 @@ return [
             'dataType' => '2',
             //商户编号
             'PID' => '800020000010030',
+            //小程序原始id gh开头
+            'original_id' => "gh_abadasfasdf",
+            //微信开放平台应用id
+            "app_id" => "wx8123123sdf",
             //Rsa公钥
             'public_key_path' => DATA_DIR . 'ccbll/ccbll_public_key.pem',
             //Rsa私钥
@@ -91,6 +99,10 @@ return [
             'dataType' => '2',
             //商户编号
             'PID' => '800020000010030',
+            //小程序原始id gh开头
+            'original_id' => "gh_abadasfasdf",
+            //微信开放平台应用id
+            "app_id" => "wx8123123sdf",
             //Rsa公钥
             'public_key_path' => DATA_DIR . 'ccbll/ccbll_public_key.pem',
             //Rsa私钥
@@ -126,6 +138,10 @@ return [
             'dataType' => '2',
             //商户编号
             'PID' => '800020000010030',
+            //小程序原始id gh开头
+            'original_id' => "gh_abadasfasdf",
+            //微信开放平台应用id
+            "app_id" => "wx8123123sdf",
             //Rsa公钥
             'public_key_path' => DATA_DIR . 'ccbll/ccbll_public_key.pem',
             //Rsa私钥
