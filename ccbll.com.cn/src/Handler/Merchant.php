@@ -90,7 +90,7 @@ class merchant extends BaseRequest
      */
     public function accountStatusChange($data)
     {
-        return $this->httpRequest->apiPost('200008', $data);
+        return $this->httpRequest->apiPost('100008', $data);
     }
 
     /**
