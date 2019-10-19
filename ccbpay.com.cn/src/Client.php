@@ -163,8 +163,23 @@ class Client implements JzPayInterface
      */
     public function weixiNative($trade_no, $out_trade_no, $total_fee, $body, $ip = "127.0.0.1", $return_url = "")
     {
-        $data = $this->buildRequestParams(self::PAYTYPE_J, func_get_args());
-        return (new Trade($this->config))->anonyPay($data);
+        $params = [
+            'trade_no' => $trade_no,
+            'out_trade_no' => $out_trade_no,
+            'total_fee' => $total_fee,
+            'body' => $body,
+            'ip' => $ip,
+            'return_url' => $return_url
+        ];
+        $data = $this->buildRequestParams(self::PAYTYPE_I, $params);
+
+        $result = (new Trade($this->config))->anonyPay($data);
+        if ($result && $result['body']['rstCode'] == "0") {
+            return $result['body']['mercOrdMsg'];
+
+        } else {
+            return ['err_code' => $result['info']['retCode'], "err_code_des" => $result['info']['errMsg']];
+        }
     }
 
     /**
@@ -210,7 +225,7 @@ class Client implements JzPayInterface
                     'pay_type' => "ccbpay",
                     "original_id" => $this->config['original_id'],
                     "app_id" => $this->config['app_id'],
-                    "prepay_id" => md5(json_encode(func_get_args))
+                    "prepay_id" => md5(json_encode(func_get_args()))
                 ]
             )
         ];
@@ -329,8 +344,23 @@ class Client implements JzPayInterface
      */
     public function alipayNative($trade_no, $out_trade_no, $total_fee, $body, $ip = "127.0.0.1", $return_url = "")
     {
-        $data = $this->buildRequestParams(self::PAYTYPE_P, func_get_args());
-        return (new Trade($this->config))->anonyPay($data);
+        $params = [
+            'trade_no' => $trade_no,
+            'out_trade_no' => $out_trade_no,
+            'total_fee' => $total_fee,
+            'body' => $body,
+            'ip' => $ip,
+            'return_url' => $return_url
+        ];
+        $data = $this->buildRequestParams(self::PAYTYPE_P, $params);
+
+        $result = (new Trade($this->config))->anonyPay($data);
+        if ($result && $result['body']['rstCode'] == "0") {
+            return $result['body']['mercOrdMsg'];
+
+        } else {
+            return ['err_code' => $result['info']['retCode'], "err_code_des" => $result['info']['errMsg']];
+        }
     }
 
     /**
