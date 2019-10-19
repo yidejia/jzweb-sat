@@ -400,23 +400,34 @@ class Client implements JzPayInterface
         ];
         $result = (new Query($this->config))->tradeQuery($data);
         if ($result && $result['body']['rstCode'] == "0") {
-            return [
-                'bank_no' => "",
-                'bank_type' => "",
-                'cash_fee' => $result['body']['actTramt'],
-                'fee_type' => $result['body']['ccy'],
-                'out_trade_no' => $out_trade_no,
-                'result_code' => "SUCCESS",
-                'return_code' => "SUCCESS",
-                'sign' => $result['info']['salt'],
-                'sub_openid' => "",
-                'third_trans_id' => "",
-                'time_end' => $result['body']['tradt'] . $result['body']['tratm'],
-                'total_fee' => $result['body']['otratm'],
-                'trade_state' => "SUCCESS",
-                'trade_type' => '',
-                'transaction_id' => $result['body']['jrnno'],
-            ];
+            if ($result['body']['traSts'] == '0') {
+                return [
+                    'bank_no' => "",
+                    'bank_type' => "",
+                    'cash_fee' => $result['body']['actTramt'],
+                    'fee_type' => $result['body']['ccy'],
+                    'out_trade_no' => $out_trade_no,
+                    'result_code' => "SUCCESS",
+                    'return_code' => "SUCCESS",
+                    'sign' => $result['info']['salt'],
+                    'sub_openid' => "",
+                    'third_trans_id' => "",
+                    'time_end' => $result['body']['tradt'] . $result['body']['tratm'],
+                    'total_fee' => $result['body']['otratm'],
+                    'trade_state' => "SUCCESS",
+                    'trade_type' => '',
+                    'transaction_id' => $result['body']['jrnno'],
+                ];
+            } else {
+                return [
+                    "mch_id" => $this->config['PID'],
+                    "result_code" => "SUCCESS",
+                    "return_code" => "SUCCESS",
+                    "sign" => $result['info']['salt'],
+                    "trade_state" => "NOTPAY",
+                    "trade_type" => ""
+                ];
+            }
         } else {
             return ['err_code' => $result['info']['retCode'], "err_code_des" => $result['info']['errMsg']];
         }
