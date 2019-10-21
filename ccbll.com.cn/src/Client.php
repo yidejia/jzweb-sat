@@ -18,7 +18,7 @@ use jzweb\sat\ccbll\Handler\Transfer;
  */
 class Client
 {
-    private $config;
+    public $config;
 
     /**
      * 构造函数
@@ -46,7 +46,7 @@ class Client
      * [personalAccount 个人用户开电子登记簿]
      * @version <1.0>  2019-09-06T11:16:12+0800
      * @param   [type]  $data                    [description]
-     * @param   boolean $h5                      [description]
+     * @param   boolean $h5 [description]
      * @return  [type] [description]
      */
     public function personalAccount($data, $h5 = false)
@@ -58,7 +58,7 @@ class Client
      * [merchantAccount 企业用户开电子登记簿]
      * @version <1.0>   2019-09-06T11:21:00+0800
      * @param   [type]  $data                    [description]
-     * @param   boolean $h5                      [description]
+     * @param   boolean $h5 [description]
      * @return  [type]                           [description]
      */
     public function merchantAccount($data, $h5 = false)
@@ -70,7 +70,7 @@ class Client
      * [personalInfoChange 个人用户信息变更]
      * @version <1.0>   2019-09-06T11:24:56+0800
      * @param   [type]  $data                    [description]
-     * @param   boolean $h5                      [description]
+     * @param   boolean $h5 [description]
      * @return  [type]                           [description]
      */
     public function personalInfoChange($data, $h5 = false)
@@ -82,7 +82,7 @@ class Client
      * [personalInfoChange 企业用户信息变更]
      * @version <1.0>   2019-09-06T11:24:56+0800
      * @param   [type]  $data                    [description]
-     * @param   boolean $h5                      [description]
+     * @param   boolean $h5 [description]
      * @return  [type]                           [description]
      */
     public function merchantInfoChange($data, $h5 = false)
@@ -114,7 +114,7 @@ class Client
     /**
      * [personalBindingAndTopUp 个人绑定银行卡入金]
      * @param   [type]  $data                    [description]
-     * @param   boolean $h5                      [description]
+     * @param   boolean $h5 [description]
      * @return  [type]                           [description]
      */
     public function personalBindingAndTopUp($data, $h5 = false)
@@ -137,7 +137,7 @@ class Client
      * [withdraw 出金]
      * @version <1.0>   2019-09-06T14:26:06+0800
      * @param   [type]  $data                    [description]
-     * @param   boolean $h5                      [description]
+     * @param   boolean $h5 [description]
      * @return  [type]                           [description]
      */
     public function withdraw($data, $h5 = false)
@@ -171,7 +171,7 @@ class Client
      * [blceOrCardPay 余额支付/绑定卡支付]
      * @version <1.0>   2019-09-06T14:44:53+0800
      * @param   [type]  $data                    [description]
-     * @param   boolean $h5                      [description]
+     * @param   boolean $h5 [description]
      * @return  [type]                           [description]
      */
     public function blceOrCardPay($data, $h5 = false)
@@ -314,7 +314,7 @@ class Client
      * [acntBlceQueryH5 电子登记簿余额信息查询H5]
      * @version <1.0>   2019-09-06T16:15:11+0800
      * @param   [type]  $data                    [description]
-     * @param   boolean $h5                      [description]
+     * @param   boolean $h5 [description]
      * @return  [type]                           [description]
      */
     public function acntBlceQueryH5($data, $h5 = false)
@@ -326,7 +326,7 @@ class Client
      * [acntBlceQuery 电子登记簿余额信息查询]
      * @version <1.0>   2019-09-06T16:15:11+0800
      * @param   [type]  $data                    [description]
-     * @param   boolean $h5                      [description]
+     * @param   boolean $h5 [description]
      * @return  [type]                           [description]
      */
     public function acntBlceQuery($data)
@@ -338,7 +338,7 @@ class Client
      * [acntStatusQuery 电子登记簿状态信息查询]
      * @version <1.0>   2019-09-06T16:15:11+0800
      * @param   [type]  $data                    [description]
-     * @param   boolean $h5                      [description]
+     * @param   boolean $h5 [description]
      * @return  [type]                           [description]
      */
     public function acntStatusQuery($data)
