@@ -42,10 +42,15 @@ class WxPayAdapter extends Client
         ];
 
         $result = (new Client($this->config))->fileUpload($data);
-        if ($result && $result['body']['rstCode'] == "0") {
-            return ['return_code' => "SUCCESS", 'return_msg' => $result['body']['fileId']];
+
+        if (isset($result['info']) || isset($result['body'])) {
+            if ($result && $result['body']['rstCode'] == "0") {
+                return ['return_code' => "SUCCESS", 'return_msg' => $result['body']['fileId']];
+            } else {
+                return ['err_code' => $result['info']['retCode'], "err_code_des" => $result['info']['errMsg']];
+            }
         } else {
-            return ['err_code' => $result['info']['retCode'], "err_code_des" => $result['info']['errMsg']];
+            return ['err_code' => $result['returnCode'], "err_code_des" => $result['returnMessage']];
         }
 
     }
@@ -76,9 +81,6 @@ class WxPayAdapter extends Client
      */
     public function createAccountByWeb($trade_no, $entity_id, $entity_name, $legal, $legal_id_card, $agent, $agent_id_card, $agent_mobile, $buss_pic_id, $legal_front_pic_id, $legal_back_pic_id, $cert_pic_id = "", $role_id = "100", $registrant = 1, $acc_type = 2, $is_mobile_view = false, $return_url = "")
     {
-
-        file_put_contents("a.txt", print_r($this->config, true) . "\n", FILE_APPEND);
-
         $data = [
             'tradeNo' => $trade_no,
             'platCusNO' => $entity_id,
@@ -159,10 +161,14 @@ class WxPayAdapter extends Client
             'rmk1' => $comments, //变更原因
         ];
         $result = (new Client($this->config))->accountStatusChange($data, $is_mobile_view);
-        if ($result && $result['body']['rstCode'] == "0") {
-            return $result['body'];
+        if (isset($result['info']) || isset($result['body'])) {
+            if ($result && $result['body']['rstCode'] == "0") {
+                return $result['body'];
+            } else {
+                return ['err_code' => $result['info']['retCode'], "err_code_des" => $result['info']['errMsg']];
+            }
         } else {
-            return ['err_code' => $result['info']['retCode'], "err_code_des" => $result['info']['errMsg']];
+            return ['err_code' => $result['returnCode'], "err_code_des" => $result['returnMessage']];
         }
     }
 
@@ -219,26 +225,31 @@ class WxPayAdapter extends Client
             'trxType' => '12001', //12001:B2C商城消费、12002:B2C商城消费合伙人模式、12005:用户缴费、12006:B2B商城消费、12007:B2B商城消费合伙人模式、12008:商品退款、19000:个人账户入金、19001:个人账户出金、19002:企业账户出金、19003:平台账户入金、19004:平台账户出金、21004:佣金分润、22007:平台缴费、22008:其他费用缴纳
         ];
         $result = (new Client($this->config))->tradeQuery($data);
-        if ($result && $result['body']['rstCode'] == "0") {
-            return [
-                'bank_no' => "",
-                'bank_type' => "",
-                'cash_fee' => $result['body']['actTramt'],
-                'fee_type' => $result['body']['ccy'],
-                'out_trade_no' => $out_trade_no,
-                'result_code' => "SUCCESS",
-                'return_code' => "SUCCESS",
-                'sign' => $result['info']['salt'],
-                'sub_openid' => "",
-                'third_trans_id' => "",
-                'time_end' => $result['body']['tradt'] . $result['body']['tratm'],
-                'total_fee' => $result['body']['otratm'],
-                'trade_state' => "SUCCESS",
-                'trade_type' => '',
-                'transaction_id' => $result['body']['jrnno'],
-            ];
+
+        if (isset($result['info']) || isset($result['body'])) {
+            if ($result && $result['body']['rstCode'] == "0") {
+                return [
+                    'bank_no' => "",
+                    'bank_type' => "",
+                    'cash_fee' => $result['body']['actTramt'],
+                    'fee_type' => $result['body']['ccy'],
+                    'out_trade_no' => $out_trade_no,
+                    'result_code' => "SUCCESS",
+                    'return_code' => "SUCCESS",
+                    'sign' => $result['info']['salt'],
+                    'sub_openid' => "",
+                    'third_trans_id' => "",
+                    'time_end' => $result['body']['tradt'] . $result['body']['tratm'],
+                    'total_fee' => $result['body']['otratm'],
+                    'trade_state' => "SUCCESS",
+                    'trade_type' => '',
+                    'transaction_id' => $result['body']['jrnno'],
+                ];
+            } else {
+                return ['err_code' => $result['info']['retCode'], "err_code_des" => $result['info']['errMsg']];
+            }
         } else {
-            return ['err_code' => $result['info']['retCode'], "err_code_des" => $result['info']['errMsg']];
+            return ['err_code' => $result['returnCode'], "err_code_des" => $result['returnMessage']];
         }
     }
 
@@ -260,28 +271,32 @@ class WxPayAdapter extends Client
             'trxType' => '12008', //12001:B2C商城消费、12002:B2C商城消费合伙人模式、12005:用户缴费、12006:B2B商城消费、12007:B2B商城消费合伙人模式、12008:商品退款、19000:个人账户入金、19001:个人账户出金、19002:企业账户出金、19003:平台账户入金、19004:平台账户出金、21004:佣金分润、22007:平台缴费、22008:其他费用缴纳
         ];
         $result = (new Client($this->config))->tradeQuery($data);
-        if ($result && $result['body']['rstCode'] == "0") {
-            return [
-                'cash_fee' => $result['body']['actTramt'],
-                'fee_type' => $result['body']['ccy'],
-                'mch_id' => "",
-                'out_refund_no_0' => $out_refund_no,
-                'out_trade_no' => $out_trade_no,
-                'refund_channel_0' => "ORIGINAL",
-                'refund_count' => $result['body']['retNum'],
-                'refund_fee_0' => $result['body']['refundAmt'],
-                'refund_id_0' => $result['body']['jrnno'],
-                'refund_status_0' => "SUCCESS",
-                'refund_success_time_0' => $result['body']['tradt'] . $result['body']['tratm'],
-                'result_code' => "SUCCESS",
-                'return_code' => "SUCCESS",
-                'sign' => $result['info']['salt'],
-                'third_trans_id' => "",
-                'total_fee' => $result['body']['otratm'],
-                'transaction_id' => $result['body']['jrnno'],
-            ];
+        if (isset($result['info']) || isset($result['body'])) {
+            if ($result && $result['body']['rstCode'] == "0") {
+                return [
+                    'cash_fee' => $result['body']['actTramt'],
+                    'fee_type' => $result['body']['ccy'],
+                    'mch_id' => "",
+                    'out_refund_no_0' => $out_refund_no,
+                    'out_trade_no' => $out_trade_no,
+                    'refund_channel_0' => "ORIGINAL",
+                    'refund_count' => $result['body']['retNum'],
+                    'refund_fee_0' => $result['body']['refundAmt'],
+                    'refund_id_0' => $result['body']['jrnno'],
+                    'refund_status_0' => "SUCCESS",
+                    'refund_success_time_0' => $result['body']['tradt'] . $result['body']['tratm'],
+                    'result_code' => "SUCCESS",
+                    'return_code' => "SUCCESS",
+                    'sign' => $result['info']['salt'],
+                    'third_trans_id' => "",
+                    'total_fee' => $result['body']['otratm'],
+                    'transaction_id' => $result['body']['jrnno'],
+                ];
+            } else {
+                return ['err_code' => $result['info']['retCode'], "err_code_des" => $result['info']['errMsg']];
+            }
         } else {
-            return ['err_code' => $result['info']['retCode'], "err_code_des" => $result['info']['errMsg']];
+            return ['err_code' => $result['returnCode'], "err_code_des" => $result['returnMessage']];
         }
     }
 
@@ -305,14 +320,18 @@ class WxPayAdapter extends Client
             'remark' => $remark,
         ];
         $result = (new Client($this->config))->goodsNotice($data);
-        if ($result && $result['body']['rstCode'] == "0") {
-            return [
-                'result_code' => 'SUCCESS',
-                'return_code' => 'SUCCESS',
-                'jrnno' => $result['body']['jrnno'],
-            ];
+        if (isset($result['info']) || isset($result['body'])) {
+            if ($result && $result['body']['rstCode'] == "0") {
+                return [
+                    'result_code' => 'SUCCESS',
+                    'return_code' => 'SUCCESS',
+                    'jrnno' => $result['body']['jrnno'],
+                ];
+            } else {
+                return ['err_code' => $result['info']['retCode'], "err_code_des" => $result['info']['errMsg']];
+            }
         } else {
-            return ['err_code' => $result['info']['retCode'], "err_code_des" => $result['info']['errMsg']];
+            return ['err_code' => $result['returnCode'], "err_code_des" => $result['returnMessage']];
         }
     }
 
@@ -339,15 +358,19 @@ class WxPayAdapter extends Client
             'tratm' => date('His'),
         ];
         $result = (new Client($this->config))->insteadToConfirm($data);
-        if ($result && $result['body']['rstCode'] == "0") {
-            return [
-                'result_code' => 'SUCCESS',
-                'return_code' => 'SUCCESS',
-                'jrnno' => $result['body']['jrnno'],
-                'success_time' => $result['body']['tradt'] . $result['body']['tratm'],
-            ];
+        if (isset($result['info']) || isset($result['body'])) {
+            if ($result && $result['body']['rstCode'] == "0") {
+                return [
+                    'result_code' => 'SUCCESS',
+                    'return_code' => 'SUCCESS',
+                    'jrnno' => $result['body']['jrnno'],
+                    'success_time' => $result['body']['tradt'] . $result['body']['tratm'],
+                ];
+            } else {
+                return ['err_code' => $result['info']['retCode'], "err_code_des" => $result['info']['errMsg']];
+            }
         } else {
-            return ['err_code' => $result['info']['retCode'], "err_code_des" => $result['info']['errMsg']];
+            return ['err_code' => $result['returnCode'], "err_code_des" => $result['returnMessage']];
         }
     }
 

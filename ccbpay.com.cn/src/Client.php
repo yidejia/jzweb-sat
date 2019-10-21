@@ -482,37 +482,41 @@ class Client implements JzPayInterface
             'trxType' => '12001', //12001:B2C商城消费、12002:B2C商城消费合伙人模式、12005:用户缴费、12006:B2B商城消费、12007:B2B商城消费合伙人模式、12008:商品退款、19000:个人账户入金、19001:个人账户出金、19002:企业账户出金、19003:平台账户入金、19004:平台账户出金、21004:佣金分润、22007:平台缴费、22008:其他费用缴纳
         ];
         $result = (new Query($this->config))->tradeQuery($data);
-        if ($result && $result['body']['rstCode'] == "0") {
-            if ($result['body']['traSts'] == '0') {
-                return [
-                    'bank_no' => "",
-                    'bank_type' => "",
-                    'cash_fee' => $result['body']['actTramt'],
-                    'fee_type' => $result['body']['ccy'],
-                    'out_trade_no' => $out_trade_no,
-                    'result_code' => "SUCCESS",
-                    'return_code' => "SUCCESS",
-                    'sign' => $result['info']['salt'],
-                    'sub_openid' => "",
-                    'third_trans_id' => "",
-                    'time_end' => $result['body']['tradt'] . $result['body']['tratm'],
-                    'total_fee' => $result['body']['otratm'],
-                    'trade_state' => "SUCCESS",
-                    'trade_type' => '',
-                    'transaction_id' => $this->config['PID'] . $result['body']['jrnno'],
-                ];
+        if (isset($result['info']) || isset($result['body'])) {
+            if ($result && $result['body']['rstCode'] == "0") {
+                if ($result['body']['traSts'] == '0') {
+                    return [
+                        'bank_no' => "",
+                        'bank_type' => "",
+                        'cash_fee' => $result['body']['actTramt'],
+                        'fee_type' => $result['body']['ccy'],
+                        'out_trade_no' => $out_trade_no,
+                        'result_code' => "SUCCESS",
+                        'return_code' => "SUCCESS",
+                        'sign' => $result['info']['salt'],
+                        'sub_openid' => "",
+                        'third_trans_id' => "",
+                        'time_end' => $result['body']['tradt'] . $result['body']['tratm'],
+                        'total_fee' => $result['body']['otratm'],
+                        'trade_state' => "SUCCESS",
+                        'trade_type' => '',
+                        'transaction_id' => $this->config['PID'] . $result['body']['jrnno'],
+                    ];
+                } else {
+                    return [
+                        "mch_id" => $this->config['PID'],
+                        "result_code" => "SUCCESS",
+                        "return_code" => "SUCCESS",
+                        "sign" => $result['info']['salt'],
+                        "trade_state" => "NOTPAY",
+                        "trade_type" => ""
+                    ];
+                }
             } else {
-                return [
-                    "mch_id" => $this->config['PID'],
-                    "result_code" => "SUCCESS",
-                    "return_code" => "SUCCESS",
-                    "sign" => $result['info']['salt'],
-                    "trade_state" => "NOTPAY",
-                    "trade_type" => ""
-                ];
+                return ['err_code' => $result['info']['retCode'], "err_code_des" => $result['info']['errMsg']];
             }
         } else {
-            return ['err_code' => $result['info']['retCode'], "err_code_des" => $result['info']['errMsg']];
+            return ['err_code' => $result['returnCode'], "err_code_des" => $result['returnMessage']];
         }
     }
 
@@ -552,23 +556,27 @@ class Client implements JzPayInterface
             'remark' => $remark,
         ];
         $result = (new Trade($this->config))->refund($data);
-        if ($result && $result['body']['rstCode'] == "0") {
-            return [
-                'mch_id' => $mch_no,
-                'out_refund_no' => $out_refund_no,
-                'out_trade_no' => $out_trade_no,
-                'refund_channel' => 'ORIGINAL',
-                'refund_fee' => $refund_fee,
-                'refund_id' => $result['body']['jrnno'],
-                'result_code' => 'SUCCESS',
-                'return_code' => 'SUCCESS',
-                'sign' => $result['info']['salt'],
-                'third_trans_id' => $quantity,
-                'total_fee' => $total_fee,
-                'transaction_id' => $this->config['PID'] . $result['body']['jrnno'],
-            ];
+        if (isset($result['info']) || isset($result['body'])) {
+            if ($result && $result['body']['rstCode'] == "0") {
+                return [
+                    'mch_id' => $mch_no,
+                    'out_refund_no' => $out_refund_no,
+                    'out_trade_no' => $out_trade_no,
+                    'refund_channel' => 'ORIGINAL',
+                    'refund_fee' => $refund_fee,
+                    'refund_id' => $result['body']['jrnno'],
+                    'result_code' => 'SUCCESS',
+                    'return_code' => 'SUCCESS',
+                    'sign' => $result['info']['salt'],
+                    'third_trans_id' => $quantity,
+                    'total_fee' => $total_fee,
+                    'transaction_id' => $this->config['PID'] . $result['body']['jrnno'],
+                ];
+            } else {
+                return ['err_code' => $result['info']['retCode'], "err_code_des" => $result['info']['errMsg']];
+            }
         } else {
-            return ['err_code' => $result['info']['retCode'], "err_code_des" => $result['info']['errMsg']];
+            return ['err_code' => $result['returnCode'], "err_code_des" => $result['returnMessage']];
         }
     }
 
@@ -590,28 +598,32 @@ class Client implements JzPayInterface
             'trxType' => '12008', //12001:B2C商城消费、12002:B2C商城消费合伙人模式、12005:用户缴费、12006:B2B商城消费、12007:B2B商城消费合伙人模式、12008:商品退款、19000:个人账户入金、19001:个人账户出金、19002:企业账户出金、19003:平台账户入金、19004:平台账户出金、21004:佣金分润、22007:平台缴费、22008:其他费用缴纳
         ];
         $result = (new Query($this->config))->tradeQuery($data);
-        if ($result && $result['body']['rstCode'] == "0") {
-            return [
-                'cash_fee' => $result['body']['actTramt'],
-                'fee_type' => $result['body']['ccy'],
-                'mch_id' => $this->config['PID'],
-                'out_refund_no_0' => $out_refund_no,
-                'out_trade_no' => $out_trade_no,
-                'refund_channel_0' => "ORIGINAL",
-                'refund_count' => $result['body']['retNum'],
-                'refund_fee_0' => $result['body']['refundAmt'],
-                'refund_id_0' => $result['body']['jrnno'],
-                'refund_status_0' => $result['body']['traSts'] == "0" ? "SUCCESS" : ("PROCESSING" . $result['body']['traSts']),
-                'refund_success_time_0' => $result['body']['tradt'] . $result['body']['tratm'],
-                'result_code' => "SUCCESS",
-                'return_code' => "SUCCESS",
-                'sign' => $result['info']['salt'],
-                'third_trans_id' => "",
-                'total_fee' => $result['body']['otratm'],
-                'transaction_id' => $this->config['PID'] . $result['body']['jrnno'],
-            ];
+        if (isset($result['info']) || isset($result['body'])) {
+            if ($result && $result['body']['rstCode'] == "0") {
+                return [
+                    'cash_fee' => $result['body']['actTramt'],
+                    'fee_type' => $result['body']['ccy'],
+                    'mch_id' => $this->config['PID'],
+                    'out_refund_no_0' => $out_refund_no,
+                    'out_trade_no' => $out_trade_no,
+                    'refund_channel_0' => "ORIGINAL",
+                    'refund_count' => $result['body']['retNum'],
+                    'refund_fee_0' => $result['body']['refundAmt'],
+                    'refund_id_0' => $result['body']['jrnno'],
+                    'refund_status_0' => $result['body']['traSts'] == "0" ? "SUCCESS" : ("PROCESSING" . $result['body']['traSts']),
+                    'refund_success_time_0' => $result['body']['tradt'] . $result['body']['tratm'],
+                    'result_code' => "SUCCESS",
+                    'return_code' => "SUCCESS",
+                    'sign' => $result['info']['salt'],
+                    'third_trans_id' => "",
+                    'total_fee' => $result['body']['otratm'],
+                    'transaction_id' => $this->config['PID'] . $result['body']['jrnno'],
+                ];
+            } else {
+                return ['err_code' => $result['info']['retCode'], "err_code_des" => $result['info']['errMsg']];
+            }
         } else {
-            return ['err_code' => $result['info']['retCode'], "err_code_des" => $result['info']['errMsg']];
+            return ['err_code' => $result['returnCode'], "err_code_des" => $result['returnMessage']];
         }
     }
 
