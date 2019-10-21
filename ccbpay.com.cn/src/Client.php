@@ -531,7 +531,8 @@ class Client implements JzPayInterface
      */
     public function orderRefund($trade_no, $out_trade_no, $out_refund_no, $total_fee, $refund_fee, $body = "伊的家商城订单")
     {
-        list($goods_str, $goods_ids_str, $remark) = explode(";", $body);
+        list($mch_no, $goods_str, $goods_ids_str, $quantity, $mobile, $remark) = explode(";", $body);
+
         $data = [
             'tradeNo' => $trade_no,
             'refundOrdNo' => $out_refund_no,
@@ -553,7 +554,7 @@ class Client implements JzPayInterface
         $result = (new Trade($this->config))->refund($data);
         if ($result && $result['body']['rstCode'] == "0") {
             return [
-                'mch_id' => $this->config['PID'],
+                'mch_id' => $mch_no,
                 'out_refund_no' => $out_refund_no,
                 'out_trade_no' => $out_trade_no,
                 'refund_channel' => 'ORIGINAL',
@@ -562,7 +563,7 @@ class Client implements JzPayInterface
                 'result_code' => 'SUCCESS',
                 'return_code' => 'SUCCESS',
                 'sign' => $result['info']['salt'],
-                'third_trans_id' => '',
+                'third_trans_id' => $quantity,
                 'total_fee' => $total_fee,
                 'transaction_id' => $this->config['PID'] . $result['body']['jrnno'],
             ];
