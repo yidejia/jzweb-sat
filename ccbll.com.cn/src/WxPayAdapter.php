@@ -88,11 +88,15 @@ class WxPayAdapter extends Client
             'busFullNm' => $entity_name,
             'registrant' => $registrant,
             'legalPerNm' => $legal,
+            'legalPerIdTyp' => '01',
             'legalPerIdNo' => $legal_id_card,
             'agent' => $agent,
+            'agentIdType' => '01',
             'agentIdNo' => $agent_id_card,
             'agentMbl' => $agent_mobile,
             'accType' => $acc_type,
+            'isAcFlg' => 1,
+            'busRating' => '00',
             'pageRetUrl' => $return_url,
             'bgRetUrl' => $this->config['callback_create_account_url'],
             'bussLicenseID' => $buss_pic_id,
@@ -318,6 +322,7 @@ class WxPayAdapter extends Client
             'oriOrdNo' => $out_trade_no,
             'tradeOrdNo' => $out_trade_no,
             'remark' => $remark,
+            'fflag' => 1,
         ];
         $result = (new Client($this->config))->goodsNotice($data);
         if (isset($result['info']) || isset($result['body'])) {

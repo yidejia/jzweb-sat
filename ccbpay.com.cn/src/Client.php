@@ -100,9 +100,13 @@ class Client implements JzPayInterface
             'tratm' => date('His'), //交易时间
             'pageRetUrl' => $data['return_url'], //页面返回url
             'bgRetUrl' => $this->config['callback_pay_url'],   //后台通知url
+            'payMode' => 2,
             'ccy' => 'CNY',
             'platFeeAmt' => round($data['total_fee'] * 0.1),
+            'platMrkAmt' => 0,
             'prdSumAmt' => $data['total_fee'],
+            'servSumAmt' => 0,
+            'profitSumAmt' => 0,
             'cnt' => 1,
             'Lists' => [],
             'ordValTmUnit' => 'H', //订单有效时间单位,D:日、H:时、M:分、S:秒
@@ -123,6 +127,10 @@ class Client implements JzPayInterface
             'tradeAmt' => $data['total_fee'],
             'platFeeAmt1' => round($data['total_fee'] * 0.1),
             'cMbl' => $customer_mobile,       //不填无法进行确认收货
+            'platMrkAmt1' => 0,
+            'servAmt' => 0,
+            'platFeeAmt1' => 0,
+            'fflag' => 1,
         ];
         return $params;
     }
@@ -564,6 +572,10 @@ class Client implements JzPayInterface
             'tradeNum' => 1,
             'tradeAmt' => $refund_fee,
             'feeAmt' => 0, //从商户余额账户扣除一笔手续费到平台账户，应保持为0
+            'expressAmt' => 0,
+            'insuranceAmt' => 0,
+            'platMrkAmt1' => 0,
+            'servAmt' => 0,
             'platFeeAmt1' => round($refund_fee * 0.1), //填了手续费由平台承担，不填由商户承担
             'remark' => $remark,
         ];
