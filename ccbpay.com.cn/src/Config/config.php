@@ -10,6 +10,7 @@ return [
     'default_dsn' => "default",
     'dsn' => [
         'default' => [
+            'debug' => true,
             //版本
             'version' => '01',
             //字符编号 00:GBK
@@ -24,6 +25,8 @@ return [
             'original_id' => "gh_abadasfasdf",
             //微信开放平台应用id
             "app_id" => "wx8123123sdf",
+            //日志文件请求路径
+            'log_file_path' => CACHE_DIR . "ccbapy_access.log",
             //Rsa公钥
             'public_key_path' => DATA_DIR . 'ccbll/ccbll_public_key.pem',
             //Rsa私钥
@@ -49,6 +52,7 @@ return [
             'callback_user_confirm_url' => 'http://106.75.132.218/ccbpay/notify_user_confirm.php',
         ],
         'dev' => [
+            'debug' => true,
             //版本
             'version' => '01',
             //字符编号 00:GBK
@@ -63,6 +67,8 @@ return [
             'original_id' => "gh_abadasfasdf",
             //微信开放平台应用id
             "app_id" => "wx8123123sdf",
+            //日志文件请求路径
+            'log_file_path' => CACHE_DIR . "ccbapy_access.log",
             //Rsa公钥
             'public_key_path' => DATA_DIR . 'ccbll/ccbll_public_key.pem',
             //Rsa私钥
@@ -89,6 +95,7 @@ return [
 
         ],
         'test' => [
+            'debug' => true,
             //版本
             'version' => '01',
             //字符编号 00:GBK
@@ -103,6 +110,8 @@ return [
             'original_id' => "gh_abadasfasdf",
             //微信开放平台应用id
             "app_id" => "wx8123123sdf",
+            //日志文件请求路径
+            'log_file_path' => CACHE_DIR . "ccbapy_access.log",
             //Rsa公钥
             'public_key_path' => DATA_DIR . 'ccbll/ccbll_public_key.pem',
             //Rsa私钥
@@ -128,6 +137,7 @@ return [
             'callback_user_confirm_url' => 'http://106.75.132.218/ccbpay/notify_user_confirm.php',
         ],
         'prod' => [
+            'debug' => true,
             //版本
             'version' => '01',
             //字符编号 00:GBK
@@ -142,6 +152,8 @@ return [
             'original_id' => "gh_abadasfasdf",
             //微信开放平台应用id
             "app_id" => "wx8123123sdf",
+            //日志文件请求路径
+            'log_file_path' => CACHE_DIR . "ccbapy_access.log",
             //Rsa公钥
             'public_key_path' => DATA_DIR . 'ccbll/ccbll_public_key.pem',
             //Rsa私钥

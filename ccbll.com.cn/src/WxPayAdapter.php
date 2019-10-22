@@ -47,7 +47,7 @@ class WxPayAdapter extends Client
             if ($result && $result['body']['rstCode'] == "0") {
                 return ['return_code' => "SUCCESS", 'return_msg' => $result['body']['fileId']];
             } else {
-                return ['err_code' => $result['info']['retCode'], "err_code_des" => $result['info']['errMsg']];
+                return ['err_code' => $result['info']['retCode'], "err_code_des" => $result['info']['errMsg'] . "(" . $trade_no . ")"];
             }
         } else {
             return ['err_code' => $result['returnCode'], "err_code_des" => $result['returnMessage']];
@@ -165,7 +165,7 @@ class WxPayAdapter extends Client
             if ($result && $result['body']['rstCode'] == "0") {
                 return $result['body'];
             } else {
-                return ['err_code' => $result['info']['retCode'], "err_code_des" => $result['info']['errMsg']];
+                return ['err_code' => $result['info']['retCode'], "err_code_des" => $result['info']['errMsg'] . "(" . $trade_no . ")"];
             }
         } else {
             return ['err_code' => $result['returnCode'], "err_code_des" => $result['returnMessage']];
@@ -246,7 +246,7 @@ class WxPayAdapter extends Client
                     'transaction_id' => $result['body']['jrnno'],
                 ];
             } else {
-                return ['err_code' => $result['info']['retCode'], "err_code_des" => $result['info']['errMsg']];
+                return ['err_code' => $result['info']['retCode'], "err_code_des" => $result['info']['errMsg'] . "(" . $trade_no . ")"];
             }
         } else {
             return ['err_code' => $result['returnCode'], "err_code_des" => $result['returnMessage']];
@@ -293,7 +293,7 @@ class WxPayAdapter extends Client
                     'transaction_id' => $result['body']['jrnno'],
                 ];
             } else {
-                return ['err_code' => $result['info']['retCode'], "err_code_des" => $result['info']['errMsg']];
+                return ['err_code' => $result['info']['retCode'], "err_code_des" => $result['info']['errMsg'] . "(" . $trade_no . ")"];
             }
         } else {
             return ['err_code' => $result['returnCode'], "err_code_des" => $result['returnMessage']];
@@ -328,7 +328,7 @@ class WxPayAdapter extends Client
                     'jrnno' => $result['body']['jrnno'],
                 ];
             } else {
-                return ['err_code' => $result['info']['retCode'], "err_code_des" => $result['info']['errMsg']];
+                return ['err_code' => $result['info']['retCode'], "err_code_des" => $result['info']['errMsg'] . "(" . $trade_no . ")"];
             }
         } else {
             return ['err_code' => $result['returnCode'], "err_code_des" => $result['returnMessage']];
@@ -367,7 +367,7 @@ class WxPayAdapter extends Client
                     'success_time' => $result['body']['tradt'] . $result['body']['tratm'],
                 ];
             } else {
-                return ['err_code' => $result['info']['retCode'], "err_code_des" => $result['info']['errMsg']];
+                return ['err_code' => $result['info']['retCode'], "err_code_des" => $result['info']['errMsg'] . "(" . $trade_no . ")"];
             }
         } else {
             return ['err_code' => $result['returnCode'], "err_code_des" => $result['returnMessage']];

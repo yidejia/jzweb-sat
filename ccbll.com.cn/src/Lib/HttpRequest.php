@@ -1,9 +1,9 @@
 <?php
 
-namespace jzweb\sat\ccbll\Lib;
+namespace jzweb\sat\ccbpay\Lib;
 
 use GuzzleHttp\Client;
-use jzweb\sat\ccbll\Exception\ServerException;
+use jzweb\sat\ccbpay\Exception\ServerException;
 
 /**
  * 封装http请求接口
@@ -150,7 +150,7 @@ class  HttpRequest
     {
         if (is_array($message)) {
             $result = '';
-            foreach ($message as $k => $v){
+            foreach ($message as $k => $v) {
                 $result .= ($result ? '&' : '') . $k . '=' . $v;
             }
             return $result;
@@ -196,6 +196,18 @@ class  HttpRequest
                 ],
                 'body' => $message,
             ]);
+            $log = "";
+            //写日志
+            if ($this->config['debug']) {
+                $log .= "======Log Start:" . date("Y-m-d H:i:s") . "======\n";
+                $log .= $this->config['url_query'] . "\n";
+                $log .= print_r($data, true) . "\n";
+                $log .= print_r($message, true) . "\n";
+                $log .= sprintf("请求流水号:%s API:%s 响应状态码:%d", $data['tradeNo'], $trxCode, $res->getStatusCode()) . "\n";
+                $log .= $res->getBody()->getContents() . "\n";
+                $log .= "======Log End:" . date("Y-m-d H:i:s") . "=====\n";
+                @file_put_contents($this->config['log_file_path'], $log . "\n", FILE_APPEND);
+            }
             if ($res->getStatusCode() == 200) {
                 $content = $this->formatMessage($res->getBody()->getContents());
             } else {
@@ -203,6 +215,16 @@ class  HttpRequest
             }
             return $this->parsingMessage($content);
         } catch (\Exception $e) {
+            if ($this->config['debug']) {
+                $log .= "======Error Start:" . date("Y-m-d H:i:s") . "======\n";
+                $log .= $this->config['url_query'] . "\n";
+                $log .= print_r($data, true) . "\n";
+                $log .= print_r($message, true) . "\n";
+                $log .= sprintf("请求流水号:%s API:%s", $data['tradeNo'], $trxCode) . "\n";
+                $log .= $e->getMessage() . "\n";
+                $log .= "======Error End:" . date("Y-m-d H:i:s") . "======\n";
+                @file_put_contents($this->config['log_file_path'], $log . "\n", FILE_APPEND);
+            }
             return ['return_code' => "FAIL", 'return_msg' => $e->getMessage()];
         }
     }
