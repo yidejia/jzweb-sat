@@ -150,7 +150,7 @@ class  HttpRequest
     {
         if (is_array($message)) {
             $result = '';
-            foreach ($message as $k => $v){
+            foreach ($message as $k => $v) {
                 $result .= ($result ? '&' : '') . $k . '=' . $v;
             }
             return $result;
