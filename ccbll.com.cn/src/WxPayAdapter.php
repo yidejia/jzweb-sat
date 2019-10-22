@@ -322,6 +322,7 @@ class WxPayAdapter extends Client
             'oriOrdNo' => $out_trade_no,
             'tradeOrdNo' => $out_trade_no,
             'remark' => $remark,
+            'fflag' => 1,
         ];
         $result = (new Client($this->config))->goodsNotice($data);
         if (isset($result['info']) || isset($result['body'])) {
