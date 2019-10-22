@@ -200,11 +200,11 @@ class  HttpRequest
             //写日志
             if ($this->config['debug']) {
                 $log .= "======Log Start:" . date("Y-m-d H:i:s") . "======\n";
-                $log .= $this->config['url_query'] . "\n";
-                $log .= print_r($data, true) . "\n";
-                $log .= print_r($message, true) . "\n";
-                $log .= sprintf("请求流水号:%s API:%s 响应状态码:%d", $data['tradeNo'], $trxCode, $res->getStatusCode()) . "\n";
-                $log .= $res->getBody()->getContents() . "\n";
+                $log .= "请求的路由地址:" . $this->config['url_query'] . "\n";
+                $log .= "打印请求参数串:" . print_r($data, true) . "\n";
+                $log .= "签名后的串:" . $message . "\n";
+                $log .= "打印调试信息:" . sprintf("请求流水号:%s API:%s 响应状态码:%d", $data['tradeNo'], $trxCode, $res->getStatusCode()) . "\n";
+                $log .= "返回的结果数据" . $res->getBody()->getContents() . "\n";
                 $log .= "======Log End:" . date("Y-m-d H:i:s") . "=====\n";
                 @file_put_contents($this->config['log_file_path'], $log . "\n", FILE_APPEND);
             }
@@ -217,11 +217,11 @@ class  HttpRequest
         } catch (\Exception $e) {
             if ($this->config['debug']) {
                 $log .= "======Error Start:" . date("Y-m-d H:i:s") . "======\n";
-                $log .= $this->config['url_query'] . "\n";
-                $log .= print_r($data, true) . "\n";
-                $log .= print_r($message, true) . "\n";
-                $log .= sprintf("请求流水号:%s API:%s", $data['tradeNo'], $trxCode) . "\n";
-                $log .= $e->getMessage() . "\n";
+                $log .= "请求的路由地址:" . $this->config['url_query'] . "\n";
+                $log .= "打印请求参数串:" . print_r($data, true) . "\n";
+                $log .= "签名后的串:" . print_r($message, true) . "\n";
+                $log .= "打印调试信息:" . sprintf("请求流水号:%s API:%s", $data['tradeNo'], $trxCode) . "\n";
+                $log .= "异常错误信息:" . $e->getMessage() . "\n";
                 $log .= "======Error End:" . date("Y-m-d H:i:s") . "======\n";
                 @file_put_contents($this->config['log_file_path'], $log . "\n", FILE_APPEND);
             }

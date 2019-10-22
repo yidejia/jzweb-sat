@@ -174,11 +174,15 @@ class Client implements JzPayInterface
         $data = $this->buildRequestParams(self::PAYTYPE_I, $params);
 
         $result = (new Trade($this->config))->anonyPay($data);
-        if ($result && $result['body']['rstCode'] == "0") {
-            return $result['body']['mercOrdMsg'];
+        if (isset($result['info']) || isset($result['body'])) {
+            if ($result && $result['body']['rstCode'] == "0") {
+                return $result['body']['mercOrdMsg'];
 
+            } else {
+                return ['err_code' => $result['info']['retCode'], "err_code_des" => $result['info']['errMsg']];
+            }
         } else {
-            return ['err_code' => $result['info']['retCode'], "err_code_des" => $result['info']['errMsg']];
+            return ['err_code' => $result['returnCode'], "err_code_des" => $result['returnMessage']];
         }
     }
 
@@ -280,36 +284,40 @@ class Client implements JzPayInterface
         ];
         $data = $this->buildRequestParams(self::PAYTYPE_W, $params);
         $result = (new Trade($this->config))->anonyPay($data);
-        if ($result && $result['body']['rstCode'] == "0") {
-            $url = $result['body']['mercOrdMsg'];
-            if ($content = file_get_contents($url)) {
-                $package = json_decode($content, true);
-                if ($package['SUCCESS']) {
-                    return [
-                        'mch_id' => $package['partnerid'],
-                        'package_json' => json_encode(
-                            [
-                                'timeStamp' => $package['timeStamp'],
-                                'nonceStr' => $package['nonceStr'],
-                                'package' => $package['package'],
-                                'signType' => $package['signType'],
-                                'paySign' => $package['paySign']
-                            ]
-                        ),
-                        'prepay_id' => substr($package['package'], 9),
-                        'result_code' => "SUCCESS",
-                        'return_code' => "SUCCESS",
-                        'sign' => md5($result['info']['salt']),
-                        'trade_type' => $this->changePayType(self::PAYTYPE_W),
-                    ];
+        if (isset($result['info']) || isset($result['body'])) {
+            if ($result && $result['body']['rstCode'] == "0") {
+                $url = $result['body']['mercOrdMsg'];
+                if ($content = file_get_contents($url)) {
+                    $package = json_decode($content, true);
+                    if ($package['SUCCESS']) {
+                        return [
+                            'mch_id' => $package['partnerid'],
+                            'package_json' => json_encode(
+                                [
+                                    'timeStamp' => $package['timeStamp'],
+                                    'nonceStr' => $package['nonceStr'],
+                                    'package' => $package['package'],
+                                    'signType' => $package['signType'],
+                                    'paySign' => $package['paySign']
+                                ]
+                            ),
+                            'prepay_id' => substr($package['package'], 9),
+                            'result_code' => "SUCCESS",
+                            'return_code' => "SUCCESS",
+                            'sign' => md5($result['info']['salt']),
+                            'trade_type' => $this->changePayType(self::PAYTYPE_W),
+                        ];
+                    } else {
+                        return ['err_code' => 888889, "err_code_des" => "获取签名数据失败2"];
+                    }
                 } else {
-                    return ['err_code' => 888889, "err_code_des" => "获取签名数据失败2"];
+                    return ['err_code' => 888890, "err_code_des" => "获取签名数据失败1"];
                 }
             } else {
-                return ['err_code' => 888890, "err_code_des" => "获取签名数据失败1"];
+                return ['err_code' => $result['info']['retCode'], "err_code_des" => $result['info']['errMsg']];
             }
         } else {
-            return ['err_code' => $result['info']['retCode'], "err_code_des" => $result['info']['errMsg']];
+            return ['err_code' => $result['returnCode'], "err_code_des" => $result['returnMessage']];
         }
     }
 
@@ -355,11 +363,15 @@ class Client implements JzPayInterface
         $data = $this->buildRequestParams(self::PAYTYPE_P, $params);
 
         $result = (new Trade($this->config))->anonyPay($data);
-        if ($result && $result['body']['rstCode'] == "0") {
-            return $result['body']['mercOrdMsg'];
+        if (isset($result['info']) || isset($result['body'])) {
+            if ($result && $result['body']['rstCode'] == "0") {
+                return $result['body']['mercOrdMsg'];
 
+            } else {
+                return ['err_code' => $result['info']['retCode'], "err_code_des" => $result['info']['errMsg']];
+            }
         } else {
-            return ['err_code' => $result['info']['retCode'], "err_code_des" => $result['info']['errMsg']];
+            return ['err_code' => $result['returnCode'], "err_code_des" => $result['returnMessage']];
         }
     }
 
