@@ -129,7 +129,6 @@ class Client implements JzPayInterface
             'cMbl' => $customer_mobile,       //不填无法进行确认收货
             'platMrkAmt1' => 0,
             'servAmt' => 0,
-            'platFeeAmt1' => 0,
             'fflag' => 1,
         ];
         return $params;
