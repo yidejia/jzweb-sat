@@ -293,7 +293,9 @@ class Client implements JzPayInterface
         $result = (new Trade($this->config))->anonyPay($data);
         if (isset($result['info']) || isset($result['body'])) {
             if ($result && $result['body']['rstCode'] == "0") {
-                $url = $result['body']['mercOrdMsg'];
+                if (!$url = $result['body']['mercOrdMsg']) {
+                    return ['err_code' => 888889, "err_code_des" => "返回支付信息有缺失"];
+                }
                 if ($content = file_get_contents($url)) {
                     $package = json_decode($content, true);
                     if ($package['SUCCESS']) {
@@ -315,10 +317,10 @@ class Client implements JzPayInterface
                             'trade_type' => $this->changePayType(self::PAYTYPE_W),
                         ];
                     } else {
-                        return ['err_code' => 888889, "err_code_des" => "获取签名数据失败2"];
+                        return ['err_code' => 888890, "err_code_des" => "请求支付异常"];
                     }
                 } else {
-                    return ['err_code' => 888890, "err_code_des" => "获取签名数据失败1"];
+                    return ['err_code' => 888891, "err_code_des" => "获取支付信息失败"];
                 }
             } else {
                 return ['err_code' => $result['info']['retCode'], "err_code_des" => $result['info']['errMsg']];
