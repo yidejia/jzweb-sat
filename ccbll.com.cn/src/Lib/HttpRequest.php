@@ -1,9 +1,9 @@
 <?php
 
-namespace jzweb\sat\ccbpay\Lib;
+namespace jzweb\sat\ccbll\Lib;
 
 use GuzzleHttp\Client;
-use jzweb\sat\ccbpay\Exception\ServerException;
+use jzweb\sat\ccbll\Exception\ServerException;
 
 /**
  * 封装http请求接口
