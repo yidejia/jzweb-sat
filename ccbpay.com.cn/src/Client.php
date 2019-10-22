@@ -179,12 +179,19 @@ class Client implements JzPayInterface
             'return_url' => $return_url
         ];
         $data = $this->buildRequestParams(self::PAYTYPE_I, $params);
-
         $result = (new Trade($this->config))->anonyPay($data);
+
         if (isset($result['info']) || isset($result['body'])) {
             if ($result && $result['body']['rstCode'] == "0") {
-                return $result['body']['mercOrdMsg'];
-
+                if ($code_url = $result['body']['mercOrdMsg']) {
+                    return [
+                        'result_code' => "SUCCESS",
+                        'return_code' => "SUCCESS",
+                        'code_url' => $code_url
+                    ];
+                } else {
+                    return ['err_code' => 888888, "err_code_des" => "返回的code_url为空"];
+                }
             } else {
                 return ['err_code' => $result['info']['retCode'], "err_code_des" => $result['info']['errMsg']];
             }
@@ -370,12 +377,19 @@ class Client implements JzPayInterface
             'return_url' => $return_url
         ];
         $data = $this->buildRequestParams(self::PAYTYPE_P, $params);
-
         $result = (new Trade($this->config))->anonyPay($data);
+
         if (isset($result['info']) || isset($result['body'])) {
             if ($result && $result['body']['rstCode'] == "0") {
-                return $result['body']['mercOrdMsg'];
-
+                if ($code_url = $result['body']['mercOrdMsg']) {
+                    return [
+                        'result_code' => "SUCCESS",
+                        'return_code' => "SUCCESS",
+                        'code_url' => $code_url
+                    ];
+                } else {
+                    return ['err_code' => 888888, "err_code_des" => "返回的code_url为空"];
+                }
             } else {
                 return ['err_code' => $result['info']['retCode'], "err_code_des" => $result['info']['errMsg']];
             }
