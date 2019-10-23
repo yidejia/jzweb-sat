@@ -2,9 +2,9 @@
 
 namespace jzweb\sat\ccbpay;
 
-use jzweb\sat\ccbll\Handler\Notice;
-use jzweb\sat\ccbll\Handler\Query;
-use jzweb\sat\ccbll\Handler\Trade;
+use jzweb\sat\ccbpay\Handler\Notice;
+use jzweb\sat\ccbpay\Handler\Query;
+use jzweb\sat\ccbpay\Handler\Trade;
 use jzweb\sat\jzpay\JzPayInterface;
 
 /**

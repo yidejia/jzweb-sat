@@ -307,6 +307,7 @@ class  HttpRequest
 
         //写日志
         if ($this->config['debug']) {
+            $log = "";
             $log .= $asynchro ? '异步通知:' : '请求结果:';
             $log .= "======Log Start:" . date("Y-m-d H:i:s") . "======\n";
             $log .= "解码结果:" . print_r($result, true) . "\n";
