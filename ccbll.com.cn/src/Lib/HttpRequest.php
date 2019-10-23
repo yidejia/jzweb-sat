@@ -294,9 +294,9 @@ class  HttpRequest
             $iv = openssl_random_pseudo_bytes(openssl_cipher_iv_length('des-ede3'));
             $body = json_decode($this->convertMessage(openssl_decrypt($body, 'des-ede3', $salt, OPENSSL_RAW_DATA, $iv)), true);
         } else {
-            $body = json_decode($this->convertMessage(base64_decode($message['BODY'])), true);
+            $body = json_decode($this->convertMessage(base64_decode(urldecode($message['BODY']))), true);
             if (!$body) {
-                $body = json_decode($this->convertMessage(base64_decode(urldecode($message['BODY']))), true);
+                $body = json_decode($this->convertMessage(base64_decode($message['BODY'])), true);
             }
         }
 
