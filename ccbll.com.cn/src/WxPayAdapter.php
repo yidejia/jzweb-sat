@@ -199,6 +199,66 @@ class WxPayAdapter extends Client
         (new Client($this->config))->passwordSetting($data, $is_mobile_view);
     }
 
+    /**
+     * 查询账户信息
+     * @param   string $trade_no    交易流水号，随机生成, 每次请求都必须有, 建议用公共方法生成
+     * @param   string $entity_id   单位ID
+     * @param   string $role_id     单位角色ID，默认100:企业店铺
+     * @return  array               返回数组
+     */
+    public function merchantInfoQuery($trade_no, $entity_id, $role_id = "100")
+    {
+        $data = [
+            'tradeNo' => $trade_no,
+            'platCusNO' => $entity_id,
+            'platRoleID' => $role_id,
+        ];
+
+        $result = (new Client($this->config))->userInfoQuery($data);
+
+        if (isset($result['info']) || isset($result['body'])) {
+            if ($result && $result['body']['rstCode'] == "0") {
+                return array_merge([
+                    'result_code' => "SUCCESS",
+                    'return_code' => "SUCCESS",
+                ], $result['body']);
+            } else {
+                return ['err_code' => $result['info']['retCode'], "err_code_des" => $result['info']['errMsg'] . "(" . $trade_no . ")"];
+            }
+        } else {
+            return ['err_code' => $result['returnCode'], "err_code_des" => $result['returnMessage']];
+        }
+    }
+
+    /**
+     * 查询账户状态
+     * @param   string $trade_no    交易流水号，随机生成, 每次请求都必须有, 建议用公共方法生成
+     * @param   string $mch_code    龙存管商户编号
+     * @return  array               返回数组
+     */
+    public function merchantStatusQuery($trade_no, $mch_code)
+    {
+        $data = [
+            'tradeNo' => $trade_no,
+            'mbrCode' => $mch_code,
+        ];
+
+        $result = (new Client($this->config))->acntStatusQuery($data);
+
+        if (isset($result['info']) || isset($result['body'])) {
+            if ($result && $result['body']['rstCode'] == "0") {
+                return array_merge([
+                    'result_code' => "SUCCESS",
+                    'return_code' => "SUCCESS",
+                ], $result['body']);
+            } else {
+                return ['err_code' => $result['info']['retCode'], "err_code_des" => $result['info']['errMsg'] . "(" . $trade_no . ")"];
+            }
+        } else {
+            return ['err_code' => $result['returnCode'], "err_code_des" => $result['returnMessage']];
+        }
+    }
+
 
     /**
      * 回调通知验签
