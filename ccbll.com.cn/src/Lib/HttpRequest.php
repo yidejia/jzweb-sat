@@ -160,10 +160,22 @@ class  HttpRequest
         parse_str($message, $output);
 
         if (isset($output['returnCode'])) {
-            return [
+            $result = [
                 'returnCode' => $output['returnCode'],
                 'returnMessage' => $this->convertMessage($output['returnMessage']),
             ];
+
+            //写日志
+            if ($this->config['debug']) {
+                $log = "";
+                $log .= '请求结果:';
+                $log .= "======Log Start:" . date("Y-m-d H:i:s") . "======\n";
+                $log .= "解码结果:" . print_r($result, true) . "\n";
+                $log .= "======Log End:" . date("Y-m-d H:i:s") . "=====\n";
+                @file_put_contents($this->config['log_file_path'], $log . "\n", FILE_APPEND);
+            }
+
+            return $result;
         } else {
             return [
                 'INFO' => str_replace(' ', '+', $output['INFO']),
