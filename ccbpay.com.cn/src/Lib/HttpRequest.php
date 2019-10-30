@@ -359,7 +359,7 @@ class  HttpRequest
             $log .= "交易代码:" . $trxCode . "\n";
             $log .= "请求的路由地址:" . $this->config['h5_url'] . "\n";
             $log .= "打印请求参数串:" . print_r($data, true) . "\n";
-            $log .= "签名后的串:" . $message . "\n";
+            $log .= "签名后的串:" . print_r($message, true) . "\n";
             $log .= "======Log End:" . date("Y-m-d H:i:s") . "=====\n";
             @file_put_contents($this->config['log_file_path'], $log . "\n", FILE_APPEND);
         }
