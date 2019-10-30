@@ -353,6 +353,17 @@ class  HttpRequest
     public function h5Post($trxCode, $data)
     {
         $message = $this->getMessage($trxCode, $data);
+        //写日志
+        if ($this->config['debug']) {
+            $log .= "======Log Start:" . date("Y-m-d H:i:s") . "======\n";
+            $log .= "交易代码:" . $trxCode . "\n";
+            $log .= "请求的路由地址:" . $this->config['h5_url'] . "\n";
+            $log .= "打印请求参数串:" . print_r($data, true) . "\n";
+            $log .= "签名后的串:" . $message . "\n";
+            $log .= "======Log End:" . date("Y-m-d H:i:s") . "=====\n";
+            @file_put_contents($this->config['log_file_path'], $log . "\n", FILE_APPEND);
+        }
+
         $echo = "<form style='display:none;' id='form1' name='form1' method='post' action='" . $this->config['h5_url'] . $this->config['url_query'] . "'>";
         foreach ($message as $k => $v) {
             $echo .= "<input name='{$k}' type='text' value='{$v}' />";
