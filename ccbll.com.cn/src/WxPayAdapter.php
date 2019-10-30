@@ -157,7 +157,7 @@ class WxPayAdapter extends Client
             'legalFrontPic' => $legal_front_pic_id,
             'legalBackPic' => $legal_back_pic_id,
             'certPic' => $cert_pic_id,
-            'openAccType' => 0, //电子登记簿开立模式（0:正常，1:存量用户预开立），默认0
+            'openAccType' => 1, //电子登记簿开立模式（0:正常，1:存量用户预开立），默认0
         ];
         $result = (new Client($this->config))->merchantCreateBatch($data);
         if (isset($result['info']) || isset($result['body'])) {

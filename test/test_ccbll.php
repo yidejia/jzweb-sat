@@ -216,3 +216,87 @@ $data = [
 $result = $sdk->passwordSetting($data);
 // $result = $sdk->passwordSetting($data, true); //移动端访问第二个参数为true
 print_r($result);
+
+
+/**
+ * 批量开户
+ */
+$data = [
+    'tradeNo' => 'm2019103017593473606',
+    'platCusNO' => '1112',
+    'platRoleID' => '100',
+    'creditCd' => 'adsafkasfhsakjfhsaq',
+    'busFullNm' => '大技术部3',
+    'registrant' => 1,
+    'legalPerNm' => '刘建3',
+    'legalPerIdTyp' => '01',
+    'legalPerIdNo' => '232134799232134715',
+    'mercFlg' => 1,
+    'receAcTyp' => 2,
+    'receAc' => '232134799232134711',
+    'receAcName' => '伊的家商行2',
+    'receAcBankName' => '建设银行',
+    'receAcBankNm' => '0105',
+    'recePerId' => '232134799232134715',
+    'receMbl' => '13422318178',
+    'receTyp' => 1,
+    'isAcFlg' => 1,
+    'busRating' => '00',
+    'bgRetUrl' => 'http://106.75.132.218/ccbpay/notify_create_account.php',
+    'bussLicenseID' => '180606130006104451',
+    'legalFrontPic' => '180606120006104472',
+    'legalBackPic' => '180606110006104473',
+    'openAccType' => 1,
+];
+$result = $sdk->merchantCreateBatch($data);
+print_r($result);
+/*
+array:2 [
+  "info" => array:8 [
+    "trxCode" => "120004"
+    "version" => "01"
+    "dataType" => "1"
+    "reqSn" => "m2019103017593473606"
+    "retCode" => "URM00000"
+    "errMsg" => "交易成功"
+    "retTime" => "20191030180059"
+    "salt" => "Xn1TksvrhTjxSAMjXZu2NpDkfKw4eMctlcY7XSumEtdIxMe9jQSmRdBMA43+c3wq1CpNzkTI74PpfOhyi3xNnjqZAggAMJMd+LHIgqyL6jQx3zZ3idLmjvVarw3z9e5wD/eNteRyHotDapeZXJLS6XdDO52A8cZSACWNhO5mWU8="
+  ]
+  "body" => array:6 [
+    "rstCode" => "0"
+    "rstMess" => "交易成功"
+    "jrnno" => "180606170006559990"
+    "userSts" => "8"
+    "mbrCode" => "0030100000863367"
+    "payAgrNo" => ""
+  ]
+]
+ */
+
+/**
+ * 异步通知
+ Array
+(
+    [info] => Array
+        (
+            [trxCode] =>
+            [version] =>
+            [dataType] => json
+            [reqSn] =>
+            [retCode] => MCA00000
+            [errMsg] => SUCCESS
+            [retTime] => 20191030180059
+        )
+
+    [body] => Array
+        (
+            [rstCode] => 0
+            [rstMess] => SUCCESS
+            [mbrCode] => 0030100000863367
+            [platCusNO] => 1112
+            [platCusName] => 刘**
+            [userSts] => 8
+            [remark] =>
+        )
+）
+ */
