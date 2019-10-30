@@ -108,6 +108,73 @@ class WxPayAdapter extends Client
     }
 
     /**
+     * [API] 企业用户开电子登记簿
+     *
+     * @param string $trade_no 交易流水号，随机生成, 每次请求都必须有, 建议用公共方法生成
+     * @param int $entity_id 后台单位ID
+     * @param int $credit_cd 社会统一信用代码
+     * @param string $entity_name 后台单位名称
+     * @param string $legal 公司法人
+     * @param string $legal_id_card 公司法人身份证
+     * @param string $legal_mobile  公司法人手机号
+     * @param string $account   结算账户
+     * @param string $account_name  结算账户名
+     * @param string $bank_name     开户银行
+     * @param string $eq_bank_name  对应龙存管支持开户银行
+     * @param string $buss_pic_id 公司营业执照
+     * @param string $legal_front_pic_id 法人身份证正面
+     * @param string $legal_back_pic_id 法人身份证反面
+     * @param string $cert_pic_id 授权书图片ID
+     * @param int $role_id 存管企业角色:100:企业店铺、101：企业买家、002:个体工商户店铺、300:交易市场物流企业、310:交易市场仓储企业
+     * @param string $registrant 注册人身份，1:法定代表人、2:授权人
+     * @param int $acc_type //账户类型，1:对私,2:对公
+     */
+    public function createAccount($trade_no, $entity_id, $credit_cd, $entity_name, $legal, $legal_id_card, $legal_mobile, $account, $account_name, $bank_name, $eq_bank_name = '', $buss_pic_id, $legal_front_pic_id, $legal_back_pic_id, $cert_pic_id = "", $role_id = "100", $registrant = 1, $acc_type = 2)
+    {
+        $data = [
+            'tradeNo' => $trade_no,
+            'platCusNO' => $entity_id,
+            'platRoleID' => $role_id,
+            'creditCd' => $credit_cd,
+            'busFullNm' => $entity_name,
+            'registrant' => $registrant,
+            'legalPerNm' => $legal,
+            'legalPerIdTyp' => '01',
+            'legalPerIdNo' => $legal_id_card,
+            'mercFlg' => 1,     //商户标识，默认1
+            'receAcTyp' => $acc_type,
+            'receAc' => $account,
+            'receAcName' => $account_name,
+            'receAcBankName' => $bank_name,
+            'receAcBankNm' => $eq_bank_name ?? $bank_name,
+            'recePerId' => $legal_id_card,
+            'receMbl' => $legal_mobile,
+            'receTyp' => 1, //收款类型（1：非委托收款，2：委托他人收款），默认为1，预开户时只允许为1
+            'isAcFlg' => 1,
+            'busRating' => '00',
+            'bgRetUrl' => $this->config['callback_create_account_url'],
+            'bussLicenseID' => $buss_pic_id,
+            'legalFrontPic' => $legal_front_pic_id,
+            'legalBackPic' => $legal_back_pic_id,
+            'certPic' => $cert_pic_id,
+            'openAccType' => 0, //电子登记簿开立模式（0:正常，1:存量用户预开立），默认0
+        ];
+        $result = (new Client($this->config))->merchantCreateBatch($data);
+        if (isset($result['info']) || isset($result['body'])) {
+            if ($result && $result['body']['rstCode'] == "0") {
+                return array_merge([
+                    'result_code' => "SUCCESS",
+                    'return_code' => "SUCCESS",
+                ], $result['body']);
+            } else {
+                return ['err_code' => $result['info']['retCode'], "err_code_des" => $result['info']['errMsg'] . "(" . $trade_no . ")"];
+            }
+        } else {
+            return ['err_code' => $result['returnCode'], "err_code_des" => $result['returnMessage']];
+        }
+    }
+
+    /**
      * 企业用户信息变更
      * 会有两次异步通知，申请成功，审核成功，依据流水号reqSn识别，所以要记录当时请求的流水号reqSn
      * 或者单独一个接收通知接口
@@ -119,7 +186,7 @@ class WxPayAdapter extends Client
      * @param bool $is_mobile_view
      * @param string $return_url
      */
-    public function merchantInfoChangeByWeb($trade_no, $mch_code, $cert_pic_id, $oper_type = "23", $is_mobile_view = false, $return_url = "")
+    public function merchantInfoChangeByWeb($trade_no, $mch_code, $cert_pic_id, $agent, $agent_id_card, $agent_mobile, $oper_type = "23", $is_mobile_view = false, $return_url = "")
     {
         $data = [
             'tradeNo' => $trade_no,
@@ -127,15 +194,85 @@ class WxPayAdapter extends Client
             'operType' => $oper_type,
             'pageRetUrl' => $return_url, //页面返回url
             'bgRetUrl' => $this->config['callback_update_account_url'],   //后台通知url
-            'agent' => '刘建国',
+            'agent' => $agent,
             'agentIdType' => '01',
-            'agentIdNo' => '430524198509243270',
-            'agentMbl' => '13450418400',
+            'agentIdNo' => $agent_id_card,
+            'agentMbl' => $agent_mobile,
             'certPic' => $cert_pic_id, //被授权书图片ID，上送文件获得，授权书模版找建行业务员要
         ];
+
         (new Client($this->config))->merchantInfoChange($data, $is_mobile_view);
     }
 
+    /**
+     * [API] 企业用户信息变更
+     * 待审核、审核回退，审核驳回，审核成功状态都会向平台发送回调
+     * 如审核驳回，则该请求被关闭，同一平台用户编号不能再次申请
+     * 15.银行账号变更时，如果电子登记簿余额不为0，或存在在途资金，则不允许变更，操作类型28.银行账号强制变更时无需校验
+     *
+     * @param string $trade_no 交易流水号，随机生成, 每次请求都必须有, 建议用公共方法生成
+     * @param string $mch_code
+     * @param string $legal     法人
+     * @param string $legal_id_card 法人生份证
+     * @param string $legal_mobile  公司法人手机号 [15，28，必填]
+     * @param string $account   结算账户 [15，28，必填]
+     * @param string $account_name  结算账户名 [15，28，必填]
+     * @param string $bank_name     开户银行 [15，28，必填]
+     * @param string $eq_bank_name  对应龙存管支持开户银行
+     * @param string $legal_front_pic_id    法人身份证正面
+     * @param string $legal_back_pic_id     法人身份证反面
+     * @param string $change_acc_id 账户变更资料ID，[28，必填]
+     * @param string $oper_type 14.法人变更, 15.银行账号变更, 28.银行账号强制变更
+     */
+    public function merchantInfoChange($trade_no, $mch_code, $legal, $legal_id_card, $legal_mobile = '', $account = '', $account_name = '', $bank_name = '', $eq_bank_name = '', $legal_front_pic_id, $legal_back_pic_id, $change_acc_id = '', $oper_type = "15")
+    {
+        $data = [
+            'tradeNo' => $trade_no,
+            'mbrCode' => $mch_code,
+            'operType' => $oper_type,
+            'bgRetUrl' => $this->config['callback_update_account_url'],   //后台通知url
+            'accountNm' => $legal,  //持卡人姓名/账户户名/法人真实姓名
+        ];
+
+        if ($oper_type == '14') {
+            $data = array_merge($data, [
+                'legalPerIdTyp' => '01',
+                'legalPerIdNo' => $legal_id_card,
+                'legalFrontPic' => $legal_front_pic_id,
+                'legalBackPic' => $legal_back_pic_id,
+            ]);
+        }
+
+        if ($oper_type == '15' || $oper_type == '28') {
+            $data = array_merge($data, [
+                'receAcTyp' => 2,
+                'receTyp' => 1,
+                'receAc' => $account,
+                'receAcName' => $account_name,
+                'receAcBankName' => $bank_name,
+                'receAcBankNm' => $eq_bank_name ?? $bank_name,
+                'recePerId' => $legal_id_card,
+                'receMbl' => $legal_mobile,
+                'receFrontPic' => $legal_front_pic_id,
+                'receBackPic' => $legal_back_pic_id,
+                'changeAccFile' => $change_acc_id,
+            ]);
+        }
+
+        $result = (new Client($this->config))->merchantInfoChangeBatch($data);
+        if (isset($result['info']) || isset($result['body'])) {
+            if ($result && $result['body']['rstCode'] == "0") {
+                return array_merge([
+                    'result_code' => "SUCCESS",
+                    'return_code' => "SUCCESS",
+                ], $result['body']);
+            } else {
+                return ['err_code' => $result['info']['retCode'], "err_code_des" => $result['info']['errMsg'] . "(" . $trade_no . ")"];
+            }
+        } else {
+            return ['err_code' => $result['returnCode'], "err_code_des" => $result['returnMessage']];
+        }
+    }
 
     /**
      * 用户电子登记簿状态变更

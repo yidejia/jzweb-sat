@@ -112,6 +112,26 @@ class Client
     }
 
     /**
+     * [merchantCreateBatch 批量企业用户开户]
+     * @param   [type] $data                    [description]
+     * @return  [type]                          [description]
+     */
+    public function merchantCreateBatch($data)
+    {
+        return (new Merchant($this->config))->merchantCreateBatch($data);
+    }
+
+    /**
+     * [merchantInfoChangeBatch 批量企业信息变更]
+     * @param   [type] $data                    [description]
+     * @return  [type]                          [description]
+     */
+    public function merchantInfoChangeBatch($data)
+    {
+        return (new Merchant($this->config))->merchantInfoChangeBatch($data);
+    }
+
+    /**
      * [personalBindingAndTopUp 个人绑定银行卡入金]
      * @param   [type]  $data                    [description]
      * @param   boolean $h5 [description]
