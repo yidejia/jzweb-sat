@@ -411,88 +411,26 @@ class WxPayAdapter extends Client
     }
 
     /**
-     * 订单查询接口
+     * 退款交易查询
+     * 交易状态，包括:0:退款成功、1:退款处理中、2:退款失败、5:取消退款
      *
-     * @param string $trade_no 交易流水号，随机生成, 每次请求都必须有, 建议用公共方法生成
-     * @param string $out_trade_no
+     * @param string $trade_no      交易流水号，随机生成, 每次请求都必须有, 建议用公共方法生成
+     * @param string $out_refund_no 退款订单单号
      * @return array|mixed
-     * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function orderQuery($trade_no, $out_trade_no)
+    public function refundQuery($trade_no, $out_refund_no)
     {
         $data = [
             'tradeNo' => $trade_no,
-            'mercOrdNo' => $out_trade_no, //订单单号
-            'trxType' => '12001', //12001:B2C商城消费、12002:B2C商城消费合伙人模式、12005:用户缴费、12006:B2B商城消费、12007:B2B商城消费合伙人模式、12008:商品退款、19000:个人账户入金、19001:个人账户出金、19002:企业账户出金、19003:平台账户入金、19004:平台账户出金、21004:佣金分润、22007:平台缴费、22008:其他费用缴纳
+            'refundOrdNo' => $out_refund_no,
         ];
-        $result = (new Client($this->config))->tradeQuery($data);
-
+        $result = (new Client($this->config))->refundQuery($data);
         if (isset($result['info']) || isset($result['body'])) {
             if ($result && $result['body']['rstCode'] == "0") {
-                return [
-                    'bank_no' => "",
-                    'bank_type' => "",
-                    'cash_fee' => $result['body']['actTramt'],
-                    'fee_type' => $result['body']['ccy'],
-                    'out_trade_no' => $out_trade_no,
+                return array_merge([
                     'result_code' => "SUCCESS",
                     'return_code' => "SUCCESS",
-                    'sign' => $result['info']['salt'],
-                    'sub_openid' => "",
-                    'third_trans_id' => "",
-                    'time_end' => $result['body']['tradt'] . $result['body']['tratm'],
-                    'total_fee' => $result['body']['otratm'],
-                    'trade_state' => "SUCCESS",
-                    'trade_type' => '',
-                    'transaction_id' => $result['body']['jrnno'],
-                ];
-            } else {
-                return ['err_code' => $result['info']['retCode'], "err_code_des" => $result['info']['errMsg'] . "(" . $trade_no . ")"];
-            }
-        } else {
-            return ['err_code' => $result['returnCode'], "err_code_des" => $result['returnMessage']];
-        }
-    }
-
-
-    /**
-     * 订单退款进度查询接口
-     *
-     * @param string $trade_no 交易流水号，随机生成, 每次请求都必须有, 建议用公共方法生成
-     * @param string $out_trade_no
-     * @return array|mixed
-     * @throws \GuzzleHttp\Exception\GuzzleException
-     */
-    public function orderRefundQuery($trade_no, $out_trade_no, $out_refund_no)
-    {
-        $data = [
-            'tradeNo' => $trade_no,
-            'mercOrdNo' => $out_trade_no, //交易订单单号
-            'mercRfOrdNo' => $out_refund_no, //退款订单单号
-            'trxType' => '12008', //12001:B2C商城消费、12002:B2C商城消费合伙人模式、12005:用户缴费、12006:B2B商城消费、12007:B2B商城消费合伙人模式、12008:商品退款、19000:个人账户入金、19001:个人账户出金、19002:企业账户出金、19003:平台账户入金、19004:平台账户出金、21004:佣金分润、22007:平台缴费、22008:其他费用缴纳
-        ];
-        $result = (new Client($this->config))->tradeQuery($data);
-        if (isset($result['info']) || isset($result['body'])) {
-            if ($result && $result['body']['rstCode'] == "0") {
-                return [
-                    'cash_fee' => $result['body']['actTramt'],
-                    'fee_type' => $result['body']['ccy'],
-                    'mch_id' => "",
-                    'out_refund_no_0' => $out_refund_no,
-                    'out_trade_no' => $out_trade_no,
-                    'refund_channel_0' => "ORIGINAL",
-                    'refund_count' => $result['body']['retNum'],
-                    'refund_fee_0' => $result['body']['refundAmt'],
-                    'refund_id_0' => $result['body']['jrnno'],
-                    'refund_status_0' => "SUCCESS",
-                    'refund_success_time_0' => $result['body']['tradt'] . $result['body']['tratm'],
-                    'result_code' => "SUCCESS",
-                    'return_code' => "SUCCESS",
-                    'sign' => $result['info']['salt'],
-                    'third_trans_id' => "",
-                    'total_fee' => $result['body']['otratm'],
-                    'transaction_id' => $result['body']['jrnno'],
-                ];
+                ], $result['body']);
             } else {
                 return ['err_code' => $result['info']['retCode'], "err_code_des" => $result['info']['errMsg'] . "(" . $trade_no . ")"];
             }
@@ -568,6 +506,35 @@ class WxPayAdapter extends Client
                     'jrnno' => $result['body']['jrnno'],
                     'success_time' => $result['body']['tradt'] . $result['body']['tratm'],
                 ];
+            } else {
+                return ['err_code' => $result['info']['retCode'], "err_code_des" => $result['info']['errMsg'] . "(" . $trade_no . ")"];
+            }
+        } else {
+            return ['err_code' => $result['returnCode'], "err_code_des" => $result['returnMessage']];
+        }
+    }
+
+    /**
+     * 平台确认退款申请
+     * @param   string $trade_no                [交易流水号]
+     * @param   string $jrnno                   [退款申请流水号]
+     * @param   string $agreest                 [确认状态,Y:同意退款、N:不同意退款]
+     * @return  array|mixed
+     */
+    public function platConfirmToRefund($trade_no, $jrnno, $agreest = 'Y')
+    {
+        $data = [
+            'tradeNo' => $trade_no,
+            'agreest' => $agreest,
+            'jrnno' => $jrnno,
+        ];
+        $result = (new Client($this->config))->platConfirmToRefund($data);
+        if (isset($result['info']) || isset($result['body'])) {
+            if ($result && $result['body']['rstCode'] == "0") {
+                return array_merge([
+                    'result_code' => 'SUCCESS',
+                    'return_code' => 'SUCCESS',
+                ], $result['body']);
             } else {
                 return ['err_code' => $result['info']['retCode'], "err_code_des" => $result['info']['errMsg'] . "(" . $trade_no . ")"];
             }

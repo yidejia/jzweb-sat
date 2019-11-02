@@ -296,5 +296,58 @@ array:2 [▼
  */
 
 
+/**
+ * 退款交易查询
+ */
+$data = [
+    'tradeNo' => 'q2019110217284694886',
+    'refundOrdNo' => 'd020891911011803',
+];
+$result = $sdk->refundQuery($data);
+print_r($result);
+
+/*
+array:2 [
+  "info" => array:8 [
+    "trxCode" => "400038"
+    "version" => "01"
+    "dataType" => "1"
+    "reqSn" => "q2019110217284694886"
+    "retCode" => "MCG00000"
+    "errMsg" => "交易成功"
+    "retTime" => "20191102173015"
+    "salt" => "OMFi4Ijm+SlZj1iy7vWuzNnsLkCUYpfsIH27IvuSP/6nG6jVikouhg/JClZitB0UA9GqkVOSJ3DE623s4FCNnUWydA3GpUx2QcjlX6TO20QIseavyFpvHiIsMgqLyXpDHPcV6LSOYPdAm8R0IrJtd8e/PbRBStJ1nz7dpDH5GjI="
+  ]
+  "body" => array:25 [
+    "rstCode" => "0"
+    "rstMess" => "交易成功"
+    "refundOrdNo" => "d020891911011803"
+    "trxType" => "12008"
+    "jrnno" => "180606130006590842"
+    "agreest" => "Y"
+    "traSts" => "2"
+    "oriOrdAmt" => "0.02"
+    "tradeNm" => "HC01 益生菌洁护牙膏,AM09 水感轻薄防晒霜SPF30PA++,BC04 水漾保湿蚕丝面膜,BC23 毛孔细致修护面膜...等"
+    "tradeRmk" => "1001,1002,10003,10004...等"
+    "tradeNum" => "10"
+    "tradeAmt" => "0.02"
+    "feeAmt" => "0"
+    "expressAmt" => "0"
+    "insuranceAmt" => "0"
+    "platMrkAmt1" => "0"
+    "servAmt" => "0"
+    "platFeeAmt1" => "0.01"
+    "remark" => "退款测试"
+    "reFundMbrCode" => "100000759343"
+    "benMbrCode" => ""
+    "refundDt" => "20191101"
+    "refundTm" => "180400"
+    "expressOrdNo" => ""
+    "rmk" => ""
+  ]
+]
+ */
+
+
 
 
