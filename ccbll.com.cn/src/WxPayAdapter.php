@@ -337,6 +337,28 @@ class WxPayAdapter extends Client
     }
 
     /**
+     * 账户激活
+     *
+     * @param string    $trade_no  交易流水号，随机生成, 每次请求都必须有, 建议用公共方法生成
+     * @param $mch_code
+     * @param string    $oper_type 29:电子登记簿激活
+     * @param bool  $is_mobile_view  标记是否是移动端访问,默认否
+     * @param string    $return_url
+     */
+    public function accountActByWeb($trade_no, $mch_code, $oper_type = "29", $is_mobile_view = false, $return_url = "")
+    {
+
+        $data = [
+            'tradeNo' => $trade_no,
+            'mbrCode' => $mch_code,
+            'operType' => $oper_type,
+            'pageRetUrl' => $return_url, //页面返回url
+            'bgRetUrl' => $this->config['callback_rest_pwd_url'],   //后台通知url
+        ];
+        (new Client($this->config))->passwordSetting($data, $is_mobile_view);
+    }
+
+    /**
      * 查询账户信息
      * @param   string $trade_no    交易流水号，随机生成, 每次请求都必须有, 建议用公共方法生成
      * @param   string $entity_id   单位ID
