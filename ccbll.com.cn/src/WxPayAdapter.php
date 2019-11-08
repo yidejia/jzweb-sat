@@ -161,7 +161,7 @@ class WxPayAdapter extends Client
         ];
         $result = (new Client($this->config))->merchantCreateBatch($data);
         if (isset($result['info']) || isset($result['body'])) {
-            if ($result && $result['body']['rstCode'] == "0") {
+            if ($result && in_array($result['body']['rstCode'], ["0", "1"])) {
                 return array_merge([
                     'result_code' => "SUCCESS",
                     'return_code' => "SUCCESS",
@@ -261,7 +261,7 @@ class WxPayAdapter extends Client
 
         $result = (new Client($this->config))->merchantInfoChangeBatch($data);
         if (isset($result['info']) || isset($result['body'])) {
-            if ($result && $result['body']['rstCode'] == "0") {
+            if ($result && in_array($result['body']['rstCode'], ["0", "1"])) {
                 return array_merge([
                     'result_code' => "SUCCESS",
                     'return_code' => "SUCCESS",
