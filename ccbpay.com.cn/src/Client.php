@@ -109,8 +109,8 @@ class Client implements JzPayInterface
             'profitSumAmt' => 0,
             'cnt' => 1,
             'Lists' => [],
-            'ordValTmUnit' => 'H', //订单有效时间单位,D:日、H:时、M:分、S:秒
-            'ordValTmCnt' => 6,
+            'ordValTmUnit' => 'D', //订单有效时间单位,D:日、H:时、M:分、S:秒
+            'ordValTmCnt' => 2,
             'sumExpressAmt' => 0,
             'sumInsuranceAmt' => 0,
             'cntlist1' => 0,
