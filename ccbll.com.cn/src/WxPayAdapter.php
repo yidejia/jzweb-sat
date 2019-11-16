@@ -418,6 +418,35 @@ class WxPayAdapter extends Client
         }
     }
 
+    /**
+     * 打款认证信息查询
+     * @param   string $trade_no    交易流水号，随机生成, 每次请求都必须有, 建议用公共方法生成
+     * @param   string $mch_code    龙存管商户编号
+     * @return  array               返回数组
+     */
+    public function payAuthInfoQuery($trade_no, $mch_code)
+    {
+        $data = [
+            'tradeNo' => $trade_no,
+            'mbrCode' => $mch_code,
+        ];
+
+        $result = (new Client($this->config))->payAuthInfoQuery($data);
+
+        if (isset($result['info']) || isset($result['body'])) {
+            if ($result && $result['body']['rstCode'] == "0") {
+                return array_merge([
+                    'result_code' => "SUCCESS",
+                    'return_code' => "SUCCESS",
+                ], $result['body']);
+            } else {
+                return ['err_code' => $result['info']['retCode'], "err_code_des" => $result['info']['errMsg'] . "(" . $trade_no . ")"];
+            }
+        } else {
+            return ['err_code' => $result['returnCode'], "err_code_des" => $result['returnMessage']];
+        }
+    }
+
 
     /**
      * 回调通知验签
