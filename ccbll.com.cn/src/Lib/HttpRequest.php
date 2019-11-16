@@ -220,6 +220,11 @@ class  HttpRequest
                 @file_put_contents($this->config['log_file_path'], $log . "\n", FILE_APPEND);
             }
             if ($res->getStatusCode() == 200) {
+                //不需要解码的
+                if (in_array($trxCode, ['600001'])) {
+                    return $res->getBody()->getContents();
+                }
+
                 $content = $this->formatMessage($res->getBody()->getContents());
             } else {
                 throw  new ServerException("网络请求异常");
