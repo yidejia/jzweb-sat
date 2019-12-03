@@ -255,6 +255,11 @@ class WxPayAdapter extends Client
                 'receMbl' => $legal_mobile,
                 'receFrontPic' => $legal_front_pic_id,
                 'receBackPic' => $legal_back_pic_id,
+            ]);
+        }
+
+        if ($oper_type == '28') {
+            $data = array_merge($data, [
                 'changeAccFile' => $change_acc_id,
             ]);
         }
