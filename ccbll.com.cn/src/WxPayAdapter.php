@@ -230,7 +230,7 @@ class WxPayAdapter extends Client
             'tradeNo' => $trade_no,
             'mbrCode' => $mch_code,
             'operType' => $oper_type,
-            'bgRetUrl' => $this->config['callback_update_account_url'],   //后台通知url
+            'bgRetUrl' => $this->config['callback_update_account2_url'],   //后台通知url
             'accountNm' => $legal,  //持卡人姓名/账户户名/法人真实姓名
         ];
 
@@ -358,7 +358,7 @@ class WxPayAdapter extends Client
             'mbrCode' => $mch_code,
             'operType' => $oper_type,
             'pageRetUrl' => $return_url, //页面返回url
-            'bgRetUrl' => $this->config['callback_rest_pwd_url'],   //后台通知url
+            'bgRetUrl' => $this->config['callback_rest_pwd2_url'],   //后台通知url
         ];
         (new Client($this->config))->passwordSetting($data, $is_mobile_view);
     }
