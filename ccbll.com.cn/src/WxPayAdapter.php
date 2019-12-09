@@ -224,7 +224,7 @@ class WxPayAdapter extends Client
      * @param string $change_acc_id 账户变更资料ID，[28，必填]
      * @param string $oper_type 14.法人变更, 15.银行账号变更, 28.银行账号强制变更
      */
-    public function merchantInfoChange($trade_no, $mch_code, $legal, $legal_id_card, $legal_mobile = '', $account = '', $account_name = '', $bank_name = '', $eq_bank_name = '', $legal_front_pic_id, $legal_back_pic_id, $change_acc_id = '', $oper_type = "15")
+    public function merchantInfoChange($trade_no, $mch_code, $legal, $legal_id_card, $legal_mobile = '', $account = '', $account_name = '', $bank_name = '', $eq_bank_name = '', $legal_front_pic_id, $legal_back_pic_id, $change_acc_id = '', $buss_pic_id='', $oper_type = "15")
     {
         $data = [
             'tradeNo' => $trade_no,
@@ -261,6 +261,13 @@ class WxPayAdapter extends Client
         if ($oper_type == '28') {
             $data = array_merge($data, [
                 'changeAccFile' => $change_acc_id,
+            ]);
+        }
+
+        //营业执照图片ID
+        if ($buss_pic_id) {
+            $data = array_merge($data, [
+                'bussLicenseID' => $buss_pic_id,
             ]);
         }
 
