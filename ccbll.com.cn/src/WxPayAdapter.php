@@ -186,7 +186,7 @@ class WxPayAdapter extends Client
      * @param bool $is_mobile_view
      * @param string $return_url
      */
-    public function merchantInfoChangeByWeb($trade_no, $mch_code, $cert_pic_id, $agent, $agent_id_card, $agent_mobile, $oper_type = "23", $is_mobile_view = false, $return_url = "")
+    public function merchantInfoChangeByWeb($trade_no, $mch_code, $account_name, $legal, $legal_id_card, $buss_pic_id, $legal_front_pic_id, $legal_back_pic_id, $cert_pic_id, $agent, $agent_id_card, $agent_mobile, $oper_type = "23", $is_mobile_view = false, $return_url = "")
     {
         $data = [
             'tradeNo' => $trade_no,
@@ -194,12 +194,31 @@ class WxPayAdapter extends Client
             'operType' => $oper_type,
             'pageRetUrl' => $return_url, //页面返回url
             'bgRetUrl' => $this->config['callback_update_account_url'],   //后台通知url
-            'agent' => $agent,
-            'agentIdType' => '01',
-            'agentIdNo' => $agent_id_card,
-            'agentMbl' => $agent_mobile,
-            'certPic' => $cert_pic_id, //被授权书图片ID，上送文件获得，授权书模版找建行业务员要
         ];
+
+        //银行账号信息
+        if ($account_name) {
+            $data['accountNm'] = $account_name;
+        }
+
+        //法人信息
+        if ($legal) {
+            $data['legalPerNm'] = $legal;
+            $data['legalPerIdTyp'] = '01';
+            $data['legalPerIdNo'] = $legal_id_card;
+            $data['bussLicenseID'] = $buss_pic_id;
+            $data['legalFrontPic'] = $legal_front_pic_id;
+            $data['legalBackPic'] = $legal_back_pic_id;
+        }
+
+        //被授权人信息
+        if ($agent) {
+            $data['agentIdType'] = '01';
+            $data['agent'] = $agent;
+            $data['agentIdNo'] = $agent_id_card;
+            $data['agentMbl'] = $agent_mobile;
+            $data['certPic'] = $cert_pic_id; //被授权书图片ID，上送文件获得，授权书模版找建行业务员要
+        }
 
         (new Client($this->config))->merchantInfoChange($data, $is_mobile_view);
     }
