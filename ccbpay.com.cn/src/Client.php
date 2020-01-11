@@ -597,6 +597,12 @@ class Client implements JzPayInterface
         $result = (new Trade($this->config))->refund($data);
         if (isset($result['info']) || isset($result['body'])) {
             if ($result && $result['body']['rstCode'] == "0") {
+                $confirmData = [
+                    'tradeNo' => $trade_no . '0',
+                    'agreest' => 'Y',
+                    'jrnno' => $result['body']['jrnno'],
+                ];
+                $comfirmResult = (new Trade($this->config))->platConfirmToRefund($confirmData);
                 return [
                     'mch_id' => $mch_no,
                     'out_refund_no' => $out_refund_no,
@@ -610,6 +616,15 @@ class Client implements JzPayInterface
                     'third_trans_id' => $quantity,
                     'total_fee' => $total_fee,
                     'transaction_id' => $this->config['PID'] . $result['body']['jrnno'],
+                    'confirmInfo' => isset($comfirmResult['body'])
+                        ? array_merge([
+                            'result_code' => 'SUCCESS',
+                            'return_code' => 'SUCCESS',
+                        ], $comfirmResult['body'])
+                        : [
+                            'err_code' => $comfirmResult['info']['retCode'],
+                            "err_code_des" => $comfirmResult['info']['errMsg']
+                        ],
                 ];
             } else {
                 return ['err_code' => $result['info']['retCode'], "err_code_des" => $result['info']['errMsg']];
