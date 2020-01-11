@@ -591,7 +591,7 @@ class Client implements JzPayInterface
             'insuranceAmt' => 0,
             'platMrkAmt1' => 0,
             'servAmt' => 0,
-            'platFeeAmt1' => round($refund_fee * 0.1), //填了手续费由平台承担，不填由商户承担
+            'platFeeAmt1' => round($refund_fee * (isset($this->config['platRate']) ? $this->config['platRate']: 0.1)), //填了分账金额由平台承担，不填由商户承担
             'remark' => $remark,
         ];
         $result = (new Trade($this->config))->refund($data);
