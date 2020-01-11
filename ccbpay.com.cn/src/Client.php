@@ -102,7 +102,7 @@ class Client implements JzPayInterface
             'bgRetUrl' => $this->config['callback_pay_url'],   //后台通知url
             'payMode' => 2,
             'ccy' => 'CNY',
-            'platFeeAmt' => round($data['total_fee'] * 0.1),
+            'platFeeAmt' => round($data['total_fee'] * (isset($this->config['platRate']) ? $this->config['platRate']: 0.1)),
             'platMrkAmt' => 0,
             'prdSumAmt' => $data['total_fee'],
             'servSumAmt' => 0,
@@ -125,7 +125,7 @@ class Client implements JzPayInterface
             'tradeRmk' => $goods_ids_str,   //填产品ID
             'tradeNum' => $quantity,   //填写产品总数量
             'tradeAmt' => $data['total_fee'],
-            'platFeeAmt1' => round($data['total_fee'] * 0.1),
+            'platFeeAmt1' => round($data['total_fee'] * (isset($this->config['platRate']) ? $this->config['platRate']: 0.1)),
             'cMbl' => $customer_mobile,       //不填无法进行确认收货
             'platMrkAmt1' => 0,
             'servAmt' => 0,
