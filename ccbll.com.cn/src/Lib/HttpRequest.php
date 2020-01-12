@@ -292,14 +292,14 @@ class  HttpRequest
             return $message;
         }
 
-        //验签操作
-        if (!$this->verifySign($message, $asynchro)) {
-            throw new ServerException("验签失败");
-        }
-
         $info = json_decode($this->convertMessage(base64_decode($message['INFO'])), true);
         if (!$info) {
             $info = json_decode($this->convertMessage(base64_decode(urldecode($message['INFO']))), true);
+        }
+
+        //验签操作 TODO
+        if ($info['trxCode'] != '400005' && !$this->verifySign($message, $asynchro)) {
+            throw new ServerException("验签失败");
         }
 
 
