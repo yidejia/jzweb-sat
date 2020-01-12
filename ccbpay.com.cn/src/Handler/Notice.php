@@ -43,4 +43,15 @@ class Notice extends BaseRequest
     {
         return $this->httpRequest->parsingMessage($data, true);
     }
+
+    /**
+     * [asynchroNotice 实时通知]
+     * @version <1.0>  2019-09-09T15:46:44+0800
+     * @param   [type] $data                    [description]
+     * @return  [type]                          [description]
+     */
+    public function synchroNotice($data)
+    {
+        return $this->httpRequest->parsingMessage($data, false);
+    }
 }

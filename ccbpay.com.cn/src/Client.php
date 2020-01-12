@@ -187,7 +187,7 @@ class Client implements JzPayInterface
                     return [
                         'result_code' => "SUCCESS",
                         'return_code' => "SUCCESS",
-                        'code_url' => $code_url
+                        'code_url' => urldecode($code_url),
                     ];
                 } else {
                     return ['err_code' => 888888, "err_code_des" => "返回的code_url为空"];
@@ -385,7 +385,7 @@ class Client implements JzPayInterface
                     return [
                         'result_code' => "SUCCESS",
                         'return_code' => "SUCCESS",
-                        'code_url' => $code_url
+                        'code_url' => urldecode($code_url),
                     ];
                 } else {
                     return ['err_code' => 888888, "err_code_des" => "返回的code_url为空"];
