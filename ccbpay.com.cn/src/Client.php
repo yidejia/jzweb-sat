@@ -496,8 +496,12 @@ class Client implements JzPayInterface
      * @param string $xml
      * @return array|bool
      */
-    public function verifySignCallBack($xml)
+    public function verifySignCallBack($xml, $asynchro = true)
     {
+        if ($asynchro === false) {
+            return (new Notice($this->config))->synchroNotice($xml);
+        }
+
         return (new Notice($this->config))->asynchroNotice($xml);
     }
 
