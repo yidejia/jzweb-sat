@@ -305,7 +305,7 @@ class Client implements JzPayInterface
                 }
                 if ($content = file_get_contents($url)) {
                     $package = json_decode($content, true);
-                    if ($package['SUCCESS']) {
+                    if ($package['SUCCESS'] == 'true' && $package["ERRCODE"] == "000000") {
                         return [
                             'mch_id' => $package['partnerid'],
                             'package_json' => json_encode(
@@ -324,7 +324,7 @@ class Client implements JzPayInterface
                             'trade_type' => $this->changePayType(self::PAYTYPE_W),
                         ];
                     } else {
-                        return ['err_code' => 888890, "err_code_des" => "请求支付异常"];
+                        return ['err_code' => 888890, "err_code_des" => $package['ERRMSG'] . '[' . $package['ERRCODE'] . ']'];
                     }
                 } else {
                     return ['err_code' => 888891, "err_code_des" => "获取支付信息失败"];
