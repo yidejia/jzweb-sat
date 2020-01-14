@@ -298,7 +298,7 @@ class  HttpRequest
         }
 
         //验签操作 TODO
-        if ($info['trxCode'] != '400005' && !$this->verifySign($message, $asynchro)) {
+        if (!in_array($info['trxCode'], ['400005', '200007']) && !$this->verifySign($message, $asynchro)) {
             throw new ServerException("验签失败");
         }
 
