@@ -668,11 +668,11 @@ class WxPayAdapter extends Client
             $data['mercOrdNo'] = $code;
         }
 
-        if ($code) {
+        if ($jrnno) {
             $data['jrnno'] = $jrnno;
         }
 
-        if ($code) {
+        if ($refund_no) {
             $data['mercRfOrdNo'] = $refund_no;
         }
 
