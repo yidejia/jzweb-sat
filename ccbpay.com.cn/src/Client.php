@@ -542,14 +542,7 @@ class Client implements JzPayInterface
                         'transaction_id' => $this->config['PID'] . $result['body']['jrnno'],
                     ];
                 } else {
-                    return [
-                        "mch_id" => $this->config['PID'],
-                        "result_code" => "SUCCESS",
-                        "return_code" => "SUCCESS",
-                        "sign" => $result['info']['salt'],
-                        "trade_state" => "NOTPAY",
-                        "trade_type" => ""
-                    ];
+                    return ['err_code' => $result['info']['retCode'], "err_code_des" => $result['info']['errMsg']];
                 }
             } else {
                 return ['err_code' => $result['info']['retCode'], "err_code_des" => $result['info']['errMsg']];
