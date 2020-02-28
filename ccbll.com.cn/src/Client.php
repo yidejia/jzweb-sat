@@ -554,4 +554,16 @@ class Client
     {
         return (new KeyManage($this->config))->platKeyUpload($data);
     }
+
+    /** 用户向平台缴费 */
+    public function usersPayCostToPlat()
+    {
+        return (new Trade($this->config))->usersPayCostToPlat($data);
+    }
+
+    /** 用户向平台缴费(H5) */
+    public function usersPayCostToPlatH5($data, $h5=false)
+    {
+        return (new Trade($this->config))->usersPayCostToPlatH5($data, $h5);
+    }
 }

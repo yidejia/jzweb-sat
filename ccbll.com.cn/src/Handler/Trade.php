@@ -162,4 +162,16 @@ class Trade extends BaseRequest
     {
         return $this->httpRequest->apiPost('200028', $data);
     }
+
+    /** 用户向平台缴费 */
+    public function usersPayCostToPlat()
+    {
+        return $this->httpRequest->apiPost('700021', $data);
+    }
+
+    /** 用户向平台缴费(H5) */
+    public function usersPayCostToPlatH5($data, $h5=false)
+    {
+        return $h5 ? $this->httpRequest->h5Post('700011', $data) : $this->httpRequest->h5Post('710011', $data);
+    }
 }
