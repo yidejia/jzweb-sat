@@ -250,7 +250,11 @@ class  HttpRequest
     private function verifySign($message, $asynchro = false)
     {
         //获取info原文
-        $info = base64_decode($asynchro ? urldecode($message['INFO']) : $message['INFO']);
+        if (strpos($message['INFO'], '%') !== false) {
+            $info = base64_decode(urldecode($message['INFO']));
+        } else {
+            $info = base64_decode($message['INFO']);
+        }
         $infoMsg = json_decode($this->convertMessage($info), true);
 
         //获取body原文
@@ -262,7 +266,11 @@ class  HttpRequest
             $iv = openssl_random_pseudo_bytes(openssl_cipher_iv_length('des-ede3'));
             $body = openssl_decrypt($body, 'des-ede3', $salt, OPENSSL_RAW_DATA, $iv);
         } else {
-            $body = base64_decode(urldecode($message['BODY']));
+            if (strpos($message['BODY'], '%') !== false) {
+                $body = base64_decode(urldecode($message['BODY']));
+            } else {
+                $body = base64_decode($message['BODY']);
+            }
         }
 
         //获取签名
@@ -283,13 +291,23 @@ class  HttpRequest
      */
     public function parsingMessage($message, $asynchro = false)
     {
+        //异步请求日志
+        if ($this->config['debug'] && $asynchro) {
+            $log = '异步通知请求参数:';
+            $log .= "======Log Start:" . date("Y-m-d H:i:s") . "======\n";
+            $log .= "解码结果:" . print_r($message, true) . "\n";
+            $log .= "======Log End:" . date("Y-m-d H:i:s") . "=====\n";
+            @file_put_contents($this->config['log_file_path'], $log . "\n", FILE_APPEND);
+        }
+
         if (!isset($message['INFO'])) {
             return $message;
         }
 
-        $info = json_decode($this->convertMessage(base64_decode($message['INFO'])), true);
-        if (!$info) {
+        if (strpos($message['INFO'], '%') !== false) {
             $info = json_decode($this->convertMessage(base64_decode(urldecode($message['INFO']))), true);
+        } else {
+            $info = json_decode($this->convertMessage(base64_decode($message['INFO'])), true);
         }
 
         //验签操作 TODO
@@ -306,8 +324,9 @@ class  HttpRequest
             $iv = openssl_random_pseudo_bytes(openssl_cipher_iv_length('des-ede3'));
             $body = json_decode($this->convertMessage(openssl_decrypt($body, 'des-ede3', $salt, OPENSSL_RAW_DATA, $iv)), true);
         } else {
-            $body = json_decode($this->convertMessage(base64_decode(urldecode($message['BODY']))), true);
-            if (!$body) {
+            if (strpos($message['BODY'], '%') !== false) {
+                $body = json_decode($this->convertMessage(base64_decode(urldecode($message['BODY']))), true);
+            } else {
                 $body = json_decode($this->convertMessage(base64_decode($message['BODY'])), true);
             }
         }
