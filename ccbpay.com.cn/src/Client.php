@@ -95,7 +95,7 @@ class Client implements JzPayInterface
             'payType' => $payType,
             'mercOrdNo' => $data['out_trade_no'],
             'trxType' => $trxType,
-            'trAmt' => $data['total_fee'],
+            'trAmt' => round($data['total_fee']),
             'tradt' => date('Ymd'), //交易日期
             'tratm' => date('His'), //交易时间
             'pageRetUrl' => $data['return_url'], //页面返回url
@@ -104,7 +104,7 @@ class Client implements JzPayInterface
             'ccy' => 'CNY',
             'platFeeAmt' => round($data['total_fee'] * (isset($this->config['platRate']) ? $this->config['platRate']: 0.1)),
             'platMrkAmt' => 0,
-            'prdSumAmt' => $data['total_fee'],
+            'prdSumAmt' => round($data['total_fee']),
             'servSumAmt' => 0,
             'profitSumAmt' => 0,
             'cnt' => 1,
@@ -124,7 +124,7 @@ class Client implements JzPayInterface
             'tradeNm' => $goods_str,    //填产品商品串
             'tradeRmk' => $goods_ids_str,   //填产品ID
             'tradeNum' => $quantity,   //填写产品总数量
-            'tradeAmt' => $data['total_fee'],
+            'tradeAmt' => round($data['total_fee']),
             'platFeeAmt1' => round($data['total_fee'] * (isset($this->config['platRate']) ? $this->config['platRate']: 0.1)),
             'cMbl' => $customer_mobile,       //不填无法进行确认收货
             'platMrkAmt1' => 0,
@@ -330,7 +330,7 @@ class Client implements JzPayInterface
                     return ['err_code' => 888891, "err_code_des" => "获取支付信息失败"];
                 }
             } else {
-                return ['err_code' => $result['info']['retCode'], "err_code_des" => $result['info']['errMsg']];
+                return ['err_code' => 888892, "err_code_des" => isset($result['body']['rstMess']) ? $result['body']['rstMess'] : $result['info']['errMsg']];
             }
         } else {
             return ['err_code' => $result['returnCode'], "err_code_des" => $result['returnMessage']];
@@ -542,10 +542,10 @@ class Client implements JzPayInterface
                         'transaction_id' => $this->config['PID'] . $result['body']['jrnno'],
                     ];
                 } else {
-                    return ['err_code' => $result['info']['retCode'], "err_code_des" => $result['info']['errMsg']];
+                    return ['err_code' => $result['info']['retCode'], "err_code_des" => '订单未支付成功'];
                 }
             } else {
-                return ['err_code' => $result['info']['retCode'], "err_code_des" => $result['info']['errMsg']];
+                return ['err_code' => $result['info']['retCode'], "err_code_des" => isset($result['body']['rstMess']) ? $result['body']['rstMess'] : $result['info']['errMsg']];
             }
         } else {
             return ['err_code' => $result['returnCode'], "err_code_des" => $result['returnMessage']];
