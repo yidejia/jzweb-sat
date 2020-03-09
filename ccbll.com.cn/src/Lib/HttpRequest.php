@@ -137,7 +137,13 @@ class  HttpRequest
      */
     private function convertMessage($message)
     {
-        return @iconv('GB2312', 'UTF-8', $message);
+        // return @iconv('GB2312', 'UTF-8//IGNORE', $message); //忽略不能转码的字符
+        $result = @iconv('GB2312', 'UTF-8', $message);
+        if (!$result) {
+            $result = mb_convert_encoding($message, "UTF-8", "GBK"); //消耗内存较大
+        }
+
+        return $result;
     }
 
     /**
