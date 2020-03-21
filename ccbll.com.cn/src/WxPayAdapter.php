@@ -182,11 +182,11 @@ class WxPayAdapter extends Client
      * @param string $trade_no 交易流水号，随机生成, 每次请求都必须有, 建议用公共方法生成
      * @param string $mch_code
      * @param $cert_pic_id
-     * @param string $oper_type //12:银行账户开户行行号变更、13:银行账户开户行名称变更、14.法人变更、15.银行账号变更、23:被授权人变更
+     * @param string $oper_type //12:银行账户开户行行号变更、13:银行账户开户行名称变更、14.法人变更、15.银行账号变更、23:被授权人变更、28:强制变更账户
      * @param bool $is_mobile_view
      * @param string $return_url
      */
-    public function merchantInfoChangeByWeb($trade_no, $mch_code, $account_name, $legal, $legal_id_card, $buss_pic_id, $legal_front_pic_id, $legal_back_pic_id, $cert_pic_id, $agent, $agent_id_card, $agent_mobile, $oper_type = "23", $is_mobile_view = false, $return_url = "")
+    public function merchantInfoChangeByWeb($trade_no, $mch_code, $account_name, $legal, $legal_id_card, $buss_pic_id, $legal_front_pic_id, $legal_back_pic_id, $agent, $agent_id_card, $agent_mobile, $cert_pic_id, $change_acc_id, $oper_type = "23", $is_mobile_view = false, $return_url = "")
     {
         $data = [
             'tradeNo' => $trade_no,
@@ -218,6 +218,11 @@ class WxPayAdapter extends Client
             $data['agentIdNo'] = $agent_id_card;
             $data['agentMbl'] = $agent_mobile;
             $data['certPic'] = $cert_pic_id; //被授权书图片ID，上送文件获得，授权书模版找建行业务员要
+        }
+
+        //强制变更信息
+        if ($change_acc_id) {
+            $data['changeAccFile'] = $change_acc_id;
         }
 
         (new Client($this->config))->merchantInfoChange($data, $is_mobile_view);
