@@ -205,7 +205,7 @@ class Client implements JzPayInterface
      */
     public function weixinMpPay($trade_no, $appid, $openid, $out_trade_no, $total_fee, $body = "伊的家商城订单", $ip = "127.0.0.1", $return_url = "")
     {
-        if (strpos($out_trade_no, 'LT') === false && time() > strtotime('2020-03-31 23:55:00')) {
+        if (time() > strtotime('2020-03-31 23:55:00')) {
             return ['error_code' => 888889, 'err_code_dsc' => '该支付渠道已停止支持'];
         }
 
