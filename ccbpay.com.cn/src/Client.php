@@ -131,6 +131,12 @@ class Client implements JzPayInterface
             'servAmt' => 0,
             'fflag' => 1,
         ];
+
+        if ($merc_no == '0009100000122815') {
+            $params['platFeeAmt'] = round($data['total_fee'] * 0.5);
+            $params['Lists'][0]['platFeeAmt1'] = round($data['total_fee'] * 0.5);
+        }
+
         return $params;
     }
 
@@ -591,6 +597,11 @@ class Client implements JzPayInterface
             'platFeeAmt1' => round($refund_fee * (isset($this->config['platRate']) ? $this->config['platRate']: 0.1)), //填了分账金额由平台承担，不填由商户承担
             'remark' => $remark,
         ];
+
+        if ($mch_no == '0009100000122815') {
+            $data['platFeeAmt1'] = round($refund_fee * 0.5);
+        }
+
         $result = (new Trade($this->config))->refund($data);
         if (isset($result['info']) || isset($result['body'])) {
             if ($result && $result['body']['rstCode'] == "0") {
