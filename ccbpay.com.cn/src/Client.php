@@ -88,7 +88,7 @@ class Client implements JzPayInterface
      */
     private function buildRequestParams($payType, $data, $trxType = "12001")
     {
-        list($merc_no, $goods_str, $goods_ids_str, $quantity, $customer_mobile) = explode(";", $data['body']);
+        list($merc_no, $goods_str, $goods_ids_str, $quantity, $customer_mobile, $platRate) = explode(";", $data['body']);
 
         $params = [
             'tradeNo' => $data['trade_no'],
@@ -102,7 +102,7 @@ class Client implements JzPayInterface
             'bgRetUrl' => $this->config['callback_pay_url'],   //后台通知url
             'payMode' => 2,
             'ccy' => 'CNY',
-            'platFeeAmt' => round($data['total_fee'] * (isset($this->config['platRate']) ? $this->config['platRate']: 0.1)),
+            'platFeeAmt' => round($data['total_fee'] * ($platRate ? $platRate: 0.106)),
             'platMrkAmt' => 0,
             'prdSumAmt' => round($data['total_fee']),
             'servSumAmt' => 0,
@@ -125,17 +125,12 @@ class Client implements JzPayInterface
             'tradeRmk' => $goods_ids_str,   //填产品ID
             'tradeNum' => $quantity,   //填写产品总数量
             'tradeAmt' => round($data['total_fee']),
-            'platFeeAmt1' => round($data['total_fee'] * (isset($this->config['platRate']) ? $this->config['platRate']: 0.1)),
+            'platFeeAmt1' => round($data['total_fee'] * ($platRate ? $platRate: 0.106)),
             'cMbl' => $customer_mobile,       //不填无法进行确认收货
             'platMrkAmt1' => 0,
             'servAmt' => 0,
             'fflag' => 1,
         ];
-
-        if ($merc_no == '0009100000122815') {
-            $params['platFeeAmt'] = round($data['total_fee'] * 0.5);
-            $params['Lists'][0]['platFeeAmt1'] = round($data['total_fee'] * 0.5);
-        }
 
         return $params;
     }
@@ -573,7 +568,10 @@ class Client implements JzPayInterface
      */
     public function orderRefund($trade_no, $out_trade_no, $out_refund_no, $total_fee, $refund_fee, $body = "伊的家商城订单")
     {
-        list($mch_no, $goods_str, $goods_ids_str, $quantity, $mobile, $remark) = explode(";", $body);
+        list($mch_no, $goods_str, $goods_ids_str, $quantity, $mobile, $platRate, $remark) = explode(";", $body);
+        if (!$remark) {
+            $platRate = isset($this->config['platRate']) ? $this->config['platRate']: 0.106;
+        }
 
         $data = [
             'tradeNo' => $trade_no,
@@ -594,13 +592,9 @@ class Client implements JzPayInterface
             'insuranceAmt' => 0,
             'platMrkAmt1' => 0,
             'servAmt' => 0,
-            'platFeeAmt1' => round($refund_fee * (isset($this->config['platRate']) ? $this->config['platRate']: 0.1)), //填了分账金额由平台承担，不填由商户承担
+            'platFeeAmt1' => round($refund_fee * ($platRate ? $platRate: 0.106)), //填了分账金额由平台承担，不填由商户承担
             'remark' => $remark,
         ];
-
-        if ($mch_no == '0009100000122815') {
-            $data['platFeeAmt1'] = round($refund_fee * 0.5);
-        }
 
         $result = (new Trade($this->config))->refund($data);
         if (isset($result['info']) || isset($result['body'])) {
