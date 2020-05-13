@@ -340,7 +340,10 @@ class WxPayAdapter extends Client
         $result = (new Client($this->config))->accountStatusChange($data, $is_mobile_view);
         if (isset($result['info']) || isset($result['body'])) {
             if ($result && $result['body']['rstCode'] == "0") {
-                return $result['body'];
+                return array_merge([
+                    'result_code' => "SUCCESS",
+                    'return_code' => "SUCCESS",
+                ], $result['body']);
             } else {
                 return ['err_code' => $result['info']['retCode'], "err_code_des" => $result['info']['errMsg'] . "(" . $trade_no . ")"];
             }
