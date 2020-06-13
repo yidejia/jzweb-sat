@@ -90,9 +90,9 @@ class Client implements JzPayInterface
     {
         $body = $data['body'];
         //总订单金额
-        $totalFee = round($data['total_fee'] + $body['plat_mrk_fee'] ? round($body['plat_mrk_fee'] * 100) : 0); //需要加上平台冲销金额
+        $totalFee = round($data['total_fee'] + ($body['plat_mrk_fee'] ? round($body['plat_mrk_fee'] * 100) : 0)); //需要加上平台冲销金额
         //平台分成
-        $platFee = $body['plat_fee'];
+        $platFee = round($body['plat_fee'] * 100);
         if (!$platFee) {
             $platFee = $body['plat_rate'] ? round($totalFee * $body['plat_rate']) : round($totalFee - ($body['mch_fee'] + $body['partner_fee']) * 100);
         }
