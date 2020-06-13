@@ -609,7 +609,7 @@ class Client implements JzPayInterface
             'insuranceAmt' => 0,
             'platMrkAmt1' => $trxType == '12008' ? round($mrk_fee) : 0,
             'servAmt' => 0,
-            'platFeeAmt1' => $trxType == '12008' ? ($body['plat_rate'] ? round($refund_fee * $body['plat_rate']) : round(($refund_amount / $total_amount) * round($total_amount - ($body['mch_fee'] + $body['partner_fee']) * 100))) : 0, //填了分账金额由平台承担，不填由商户承担
+            'platFeeAmt1' => $trxType == '12008' ? ($body['plat_rate'] ? round($refund_amount * $body['plat_rate']) : round(($refund_amount / $total_amount) * round($total_amount - ($body['mch_fee'] + $body['partner_fee']) * 100))) : 0, //填了分账金额由平台承担，不填由商户承担
             'remark' => $body['remark'] ?: '不想要了',
         ];
 
