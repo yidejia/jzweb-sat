@@ -88,49 +88,66 @@ class Client implements JzPayInterface
      */
     private function buildRequestParams($payType, $data, $trxType = "12001")
     {
-        list($merc_no, $goods_str, $goods_ids_str, $quantity, $customer_mobile, $platRate) = explode(";", $data['body']);
+        $body = $data['body'];
+        //总订单金额
+        $totalFee = round($data['total_fee'] + $body['plat_mrk_fee'] ? round($body['plat_mrk_fee'] * 100) : 0); //需要加上平台冲销金额
+        //平台分成
+        $platFee = $body['plat_fee'];
+        if (!$platFee) {
+            $platFee = $body['plat_rate'] ? round($totalFee * $body['plat_rate']) : round($totalFee - ($body['mch_fee'] + $body['partner_fee']) * 100);
+        }
 
         $params = [
             'tradeNo' => $data['trade_no'],
             'payType' => $payType,
             'mercOrdNo' => $data['out_trade_no'],
-            'trxType' => $trxType,
-            'trAmt' => round($data['total_fee']),
+            'trxType' => $body['partner_no'] ? '12002' : $trxType,
+            'trAmt' => round($data['total_fee']), //实际支付金额
             'tradt' => date('Ymd'), //交易日期
             'tratm' => date('His'), //交易时间
-            'pageRetUrl' => $data['return_url'], //页面返回url
-            'bgRetUrl' => $this->config['callback_pay_url'],   //后台通知url
+            'pageRetUrl' => $data['return_url'],    //页面返回url
+            'bgRetUrl' => $this->config['callback_pay_url'],    //后台通知url
             'payMode' => 2,
             'ccy' => 'CNY',
-            'platFeeAmt' => round($data['total_fee'] * ($platRate ? $platRate: 0.106)),
-            'platMrkAmt' => 0,
-            'prdSumAmt' => round($data['total_fee']),
+            'platFeeAmt' => $platFee,   //平台分成
+            'platMrkAmt' => $body['plat_mrk_fee'] ? round($body['plat_mrk_fee'] * 100) : 0,    //平台营销冲抵金额（分）
+            'prdSumAmt' => $totalFee,   //商品总金额，单位分
             'servSumAmt' => 0,
-            'profitSumAmt' => 0,
+            'profitSumAmt' => $body['partner_no'] && ($body['mch_no'] != $body['partner_no']) ? round($body['partner_fee'] * 100) : 0, //合伙人总金额
             'cnt' => 1,
             'Lists' => [],
-            'ordValTmUnit' => 'D', //订单有效时间单位,D:日、H:时、M:分、S:秒
+            'ordValTmUnit' => 'D',  //订单有效时间单位,D:日、H:时、M:分、S:秒
             'ordValTmCnt' => 2,
             'sumExpressAmt' => 0,
             'sumInsuranceAmt' => 0,
             'cntlist1' => 0,
             'Lists1' => [],
             'rmk2' => $data['appid'] ?: "", //预留字段2，微信小程序/微信公众号支付时必输，上送微信小程序/微信公众号的APPID
-            'rmk3' => $data['openid'] ?: "", //预留字段3,微信小程序/微信公众号支付时必输，上送微信小程序/微信公众号的用户子标识OPENID
+            'rmk3' => $data['openid'] ?: "",    //预留字段3,微信小程序/微信公众号支付时必输，上送微信小程序/微信公众号的用户子标识OPENID
         ];
-        $params['Lists'][] = [
+
+        //子订单
+        $lists = [
             'tradeOrdNo' => $data['out_trade_no'],
-            'mercMbrCode' => $merc_no, //填写子商户信息
-            'tradeNm' => $goods_str,    //填产品商品串
-            'tradeRmk' => $goods_ids_str,   //填产品ID
-            'tradeNum' => $quantity,   //填写产品总数量
-            'tradeAmt' => round($data['total_fee']),
-            'platFeeAmt1' => round($data['total_fee'] * ($platRate ? $platRate: 0.106)),
-            'cMbl' => $customer_mobile,       //不填无法进行确认收货
-            'platMrkAmt1' => 0,
+            'mercMbrCode' => $body['mch_no'],   //收款方商户编号
+            'tradeNm' => $body['goods_str'],    //填产品商品串
+            'tradeRmk' => $body['goods_ids'],   //填产品ID
+            'tradeNum' => $body['count'],   //填写产品总数量
+            'tradeAmt' => $totalFee,    //子订单商品金额
+            'platMrkAmt1' => $body['plat_mrk_fee'] ? round($body['plat_mrk_fee']) : 0,   //平台营销冲抵金额
             'servAmt' => 0,
+            'platFeeAmt1' => $platFee,  //平台分成
             'fflag' => 1,
+            'cMbl' => $body['mobile'],  //不填无法进行确认收货
         ];
+
+        //合伙人分账信息
+        if ($body['partner_no'] && ($body['mch_no'] != $body['partner_no'])) {
+            $lists['partnerNo'] = $body['partner_no'];
+            $lists['profitAmt'] = round($body['partner_fee'] * 100);    //合伙人总金额
+            $lists['profitTaxAmt'] = 0;    //合伙人缴税金额，默认0
+        }
+        $params['Lists'][] = $lists;
 
         return $params;
     }
@@ -560,41 +577,45 @@ class Client implements JzPayInterface
      * @param string $trade_no 交易流水号，随机生成, 每次请求都必须有, 建议用公共方法生成
      * @param string $out_trade_no
      * @param string $out_refund_no
-     * @param int $total_fee
-     * @param int $refund_fee
+     * @param int $total_fee    实际支付金额
+     * @param int $refund_fee   实际退款金额
      *
      * @return array|mixed
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function orderRefund($trade_no, $out_trade_no, $out_refund_no, $total_fee, $refund_fee, $body = "伊的家商城订单")
+    public function orderRefund($trade_no, $out_trade_no, $out_refund_no, $total_fee, $refund_fee, $mrk_fee = 0, $body = "伊的家商城订单", $trxType = '12008')
     {
-        list($mch_no, $goods_str, $goods_ids_str, $quantity, $mobile, $platRate, $remark) = explode(";", $body);
-        if (!$remark) {
-            $platRate = isset($this->config['platRate']) ? $this->config['platRate']: 0.106;
-        }
+        //总订单金额
+        $total_amount = $trxType == '12008' ? round($total_fee + $body['plat_mrk_fee'] * 100) : round($total_fee);
+        //总退款金额
+        $refund_amount = $trxType == '12008' ? round($refund_fee + $mrk_fee) : round($refund_fee);
 
         $data = [
             'tradeNo' => $trade_no,
             'refundOrdNo' => $out_refund_no,
-            'trxType' => '12008', //12008:商品退款，12014:佣金退款
-            'operType' => $total_fee == $refund_fee ? '21' : '22', //针对子订单，子订单退全额就是全额退款
+            'trxType' => $trxType, //12008:商品退款，12014:佣金退款
+            'operType' => $total_amount == $refund_amount ? '21' : '22', //针对子订单，子订单退全额就是全额退款
             'oriOrdNo' => $out_trade_no,
-            'oriOrdAmt' => $refund_fee,
+            'oriOrdAmt' => round($refund_fee),
             'refundDt' => date('Ymd'),
             'refundTm' => date('His'),
             'tradeOrdNo' => $out_trade_no,
-            'tradeNm' => $goods_str,
-            'tradeRmk' => $goods_ids_str,
+            'tradeNm' => $body['goods_str'],
+            'tradeRmk' => $body['goods_ids'],
             'tradeNum' => 1,
-            'tradeAmt' => $refund_fee,
+            'tradeAmt' => $trxType == '12008' ? $refund_amount : 0,    //需要加上冲抵金额
             'feeAmt' => 0, //从商户余额账户扣除一笔手续费到平台账户，应保持为0
             'expressAmt' => 0,
             'insuranceAmt' => 0,
-            'platMrkAmt1' => 0,
+            'platMrkAmt1' => $trxType == '12008' ? round($mrk_fee) : 0,
             'servAmt' => 0,
-            'platFeeAmt1' => round($refund_fee * ($platRate ? $platRate: 0.106)), //填了分账金额由平台承担，不填由商户承担
-            'remark' => $remark,
+            'platFeeAmt1' => $trxType == '12008' ? ($body['plat_rate'] ? round($refund_fee * $body['plat_rate']) : round(($refund_amount / $total_amount) * round($total_amount - ($body['mch_fee'] + $body['partner_fee']) * 100))) : 0, //填了分账金额由平台承担，不填由商户承担
+            'remark' => $body['remark'] ?: '不想要了',
         ];
+
+        if ($trxType == '12014') {
+            $data['rmk1'] = $body['partner_no'];    //当业务类型为12014-佣金退款，该字段传合伙人编号
+        }
 
         $result = (new Trade($this->config))->refund($data);
         if (isset($result['info']) || isset($result['body'])) {
@@ -606,7 +627,7 @@ class Client implements JzPayInterface
                 ];
                 $comfirmResult = (new Trade($this->config))->platConfirmToRefund($confirmData);
                 return [
-                    'mch_id' => $mch_no,
+                    'mch_id' => $body['mch_no'],
                     'out_refund_no' => $out_refund_no,
                     'out_trade_no' => $out_trade_no,
                     'refund_channel' => 'ORIGINAL',
@@ -615,7 +636,7 @@ class Client implements JzPayInterface
                     'result_code' => 'SUCCESS',
                     'return_code' => 'SUCCESS',
                     'sign' => $result['info']['salt'],
-                    'third_trans_id' => $quantity,
+                    'third_trans_id' => $result['body']['jrnno'],
                     'total_fee' => $total_fee,
                     'transaction_id' => $this->config['PID'] . $result['body']['jrnno'],
                     'confirmInfo' => isset($comfirmResult['body'])
