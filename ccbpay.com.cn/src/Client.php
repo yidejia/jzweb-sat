@@ -101,7 +101,7 @@ class Client implements JzPayInterface
             'tradeNo' => $data['trade_no'],
             'payType' => $payType,
             'mercOrdNo' => $data['out_trade_no'],
-            'trxType' => $body['partner_no'] ? '12002' : $trxType,
+            'trxType' => $body['partner_no'] && ($body['mch_no'] != $body['partner_no']) ? '12002' : $trxType,
             'trAmt' => round($data['total_fee']), //实际支付金额
             'tradt' => date('Ymd'), //交易日期
             'tratm' => date('His'), //交易时间
