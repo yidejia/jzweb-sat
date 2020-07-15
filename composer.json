@@ -18,7 +18,8 @@
   "require": {
     "php": ">=7.1",
     "guzzlehttp/guzzle": "^6.3",
-    "league/flysystem-sftp": "^1.0"
+    "league/flysystem-sftp": "^1.0",
+    "monolog/monolog": "^2.1"
   },
   "autoload": {
     "psr-4": {

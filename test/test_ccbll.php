@@ -19,6 +19,8 @@ $config = [
     'dataType' => '1',
     //商户编号
     'PID' => '800020000010030',
+    //日志路径
+    'log_path' => './' . date('Ym') . "/",
     //Rsa公钥
     'public_key_path' => '../ccbll.com.cn/src/Config/ccbll_public_key.pem',
     //Rsa私钥
@@ -36,8 +38,12 @@ $config = [
     //本地资源地址
     'base_url' => 'http://106.75.132.218:80/',
 ];
-
+use \jzweb\sat\ccbll\Lib\Log;
 $sdk = new \jzweb\sat\ccbll\Client($config);
+
+(new Log($config))->log('test');
+echo 1;
+exit;
 
 /** 文件上传 */
 $data = [

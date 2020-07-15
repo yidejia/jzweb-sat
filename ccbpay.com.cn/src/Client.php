@@ -6,6 +6,7 @@ use jzweb\sat\ccbpay\Handler\Notice;
 use jzweb\sat\ccbpay\Handler\Query;
 use jzweb\sat\ccbpay\Handler\Trade;
 use jzweb\sat\jzpay\JzPayInterface;
+use jzweb\sat\ccbpay\Lib\Log;
 
 /**
  * 龙存管官方操作SDK
@@ -322,7 +323,10 @@ class Client implements JzPayInterface
                 if (!$url = $result['body']['mercOrdMsg']) {
                     return ['err_code' => 888889, "err_code_des" => "返回支付信息有缺失"];
                 }
+
                 if ($content = file_get_contents($url)) {
+                    (new Log($this->config))->log("支付链接解析:" . $content);
+
                     $package = json_decode($content, true);
                     if ($package['SUCCESS'] == 'true' && $package["ERRCODE"] == "000000") {
                         return [

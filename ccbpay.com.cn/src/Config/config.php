@@ -27,6 +27,8 @@ return [
             "app_id" => "wx8123123sdf",
             //日志文件请求路径
             'log_file_path' => CACHE_DIR . "ccbapy_access.log",
+            //日志路径
+            'log_path' => CACHE_DIR . date('Ym') . "/",
             //Rsa公钥
             'public_key_path' => DATA_DIR . 'ccbll/ccbll_public_key.pem',
             //Rsa私钥
@@ -112,6 +114,8 @@ return [
             "app_id" => "wx8123123sdf",
             //日志文件请求路径
             'log_file_path' => CACHE_DIR . "ccbapy_access.log",
+            //日志路径
+            'log_path' => CACHE_DIR . date('Ym') . "/",
             //Rsa公钥
             'public_key_path' => DATA_DIR . 'ccbll/ccbll_public_key.pem',
             //Rsa私钥
@@ -154,6 +158,8 @@ return [
             "app_id" => "wx8123123sdf",
             //日志文件请求路径
             'log_file_path' => CACHE_DIR . "ccbapy_access.log",
+            //日志路径
+            'log_path' => CACHE_DIR . date('Ym') . "/",
             //Rsa公钥
             'public_key_path' => DATA_DIR . 'ccbll/ccbll_public_key.pem',
             //Rsa私钥

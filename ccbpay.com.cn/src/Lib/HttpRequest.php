@@ -4,6 +4,7 @@ namespace jzweb\sat\ccbpay\Lib;
 
 use GuzzleHttp\Client;
 use jzweb\sat\ccbpay\Exception\ServerException;
+use jzweb\sat\ccbpay\Lib\Log;
 
 /**
  * 封装http请求接口
@@ -18,6 +19,7 @@ class  HttpRequest
     public function __construct($config)
     {
         $this->config = $config;
+        $log = new Log($config);
     }
 
     /**
@@ -167,12 +169,7 @@ class  HttpRequest
 
             //写日志
             if ($this->config['debug']) {
-                $log = "";
-                $log .= '请求结果:';
-                $log .= "======Log Start:" . date("Y-m-d H:i:s") . "======\n";
-                $log .= "解码结果:" . print_r($result, true) . "\n";
-                $log .= "======Log End:" . date("Y-m-d H:i:s") . "=====\n";
-                @file_put_contents($this->config['log_file_path'], $log . "\n", FILE_APPEND);
+                $log->log('报文解码:' . print_r($result, true));
             }
 
             return $result;
@@ -211,13 +208,9 @@ class  HttpRequest
             $log = "";
             //写日志
             if ($this->config['debug']) {
-                $log .= "======Log Start:" . date("Y-m-d H:i:s") . "======\n";
-                $log .= "请求的路由地址:" . $this->config['url_query'] . "\n";
-                $log .= "打印请求参数串:" . print_r($data, true) . "\n";
-                // $log .= "签名后的串:" . $message . "\n";
-                $log .= "打印调试信息:" . sprintf("请求流水号:%s API:%s 响应状态码:%d", $data['tradeNo'], $trxCode, $res->getStatusCode()) . "\n";
-                $log .= "======Log End:" . date("Y-m-d H:i:s") . "=====\n";
-                @file_put_contents($this->config['log_file_path'], $log . "\n", FILE_APPEND);
+                $log->log('请求的路由地址:' . $this->config['url_query']);
+                $log->log('打印请求参数串:' . print_r($data, true));
+                $log->log("打印调试信息:" . sprintf("请求流水号:%s API:%s 响应状态码:%d", $data['tradeNo'], $trxCode, $res->getStatusCode()));
             }
             if ($res->getStatusCode() == 200) {
                 $content = $this->formatMessage($res->getBody()->getContents());
@@ -227,14 +220,10 @@ class  HttpRequest
             return $this->parsingMessage($content);
         } catch (\Exception $e) {
             if ($this->config['debug']) {
-                $log .= "======Error Start:" . date("Y-m-d H:i:s") . "======\n";
-                $log .= "请求的路由地址:" . $this->config['url_query'] . "\n";
-                $log .= "打印请求参数串:" . print_r($data, true) . "\n";
-                // $log .= "签名后的串:" . $message . "\n";
-                $log .= "打印调试信息:" . sprintf("请求流水号:%s API:%s", $data['tradeNo'], $trxCode) . "\n";
-                $log .= "异常错误信息:" . $e->getMessage() . "\n";
-                $log .= "======Error End:" . date("Y-m-d H:i:s") . "======\n";
-                @file_put_contents($this->config['log_file_path'], $log . "\n", FILE_APPEND);
+                $log->log('请求的路由地址:' . $this->config['url_query']);
+                $log->log('打印请求参数串:' . print_r($data, true));
+                $log->log("打印调试信息:" . sprintf("请求流水号:%s API:%s", $data['tradeNo'], $trxCode));
+                $log->log("异常错误信息:" . $e->getMessage(), 'error');
             }
             return ['return_code' => "FAIL", 'return_msg' => $e->getMessage()];
         }
@@ -293,11 +282,7 @@ class  HttpRequest
     {
         //异步请求日志
         if ($this->config['debug'] && $asynchro) {
-            $log = '异步通知请求参数:';
-            $log .= "======Log Start:" . date("Y-m-d H:i:s") . "======\n";
-            $log .= "解码结果:" . print_r($message, true) . "\n";
-            $log .= "======Log End:" . date("Y-m-d H:i:s") . "=====\n";
-            @file_put_contents($this->config['log_file_path'], $log . "\n", FILE_APPEND);
+            $log->log('异步通知解码:' . print_r($message, true));
         }
 
         if (!isset($message['INFO'])) {
@@ -338,12 +323,7 @@ class  HttpRequest
 
         //写日志
         if ($this->config['debug']) {
-            $log = "";
-            $log .= $asynchro ? '异步通知:' : '请求结果:';
-            $log .= "======Log Start:" . date("Y-m-d H:i:s") . "======\n";
-            $log .= "解码结果:" . print_r($result, true) . "\n";
-            $log .= "======Log End:" . date("Y-m-d H:i:s") . "=====\n";
-            @file_put_contents($this->config['log_file_path'], $log . "\n", FILE_APPEND);
+            $log->log($asynchro ? '异步通知:' : '请求结果:' . '解码:' . print_r($result, true));
         }
 
         return $result;
@@ -374,13 +354,9 @@ class  HttpRequest
         $message = $this->getMessage($trxCode, $data);
         //写日志
         if ($this->config['debug']) {
-            $log .= "======Log Start:" . date("Y-m-d H:i:s") . "======\n";
-            $log .= "交易代码:" . $trxCode . "\n";
-            $log .= "请求的路由地址:" . $this->config['h5_url'] . "\n";
-            $log .= "打印请求参数串:" . print_r($data, true) . "\n";
-            // $log .= "签名后的串:" . print_r($message, true) . "\n";
-            $log .= "======Log End:" . date("Y-m-d H:i:s") . "=====\n";
-            @file_put_contents($this->config['log_file_path'], $log . "\n", FILE_APPEND);
+            $log->log("交易代码:" . $trxCode);
+            $log->log("请求的路由地址:" . $this->config['h5_url']);
+            $log->log("打印请求参数串:" . print_r($data, true));
         }
 
         $echo = "<form style='display:none;' id='form1' name='form1' method='post' action='" . $this->config['h5_url'] . $this->config['url_query'] . "'>";
