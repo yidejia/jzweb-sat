@@ -19,7 +19,7 @@ class  HttpRequest
     public function __construct($config)
     {
         $this->config = $config;
-        $log = new Log($config);
+        $this->log = new Log($config);
     }
 
     /**
@@ -169,7 +169,7 @@ class  HttpRequest
 
             //写日志
             if ($this->config['debug']) {
-                $log->log('报文解码:' . print_r($result, true));
+                $this->log->log('报文解码:' . print_r($result, true));
             }
 
             return $result;
@@ -205,12 +205,12 @@ class  HttpRequest
                 ],
                 'body' => $message,
             ]);
-            $log = "";
+
             //写日志
             if ($this->config['debug']) {
-                $log->log('请求的路由地址:' . $this->config['url_query']);
-                $log->log('打印请求参数串:' . print_r($data, true));
-                $log->log("打印调试信息:" . sprintf("请求流水号:%s API:%s 响应状态码:%d", $data['tradeNo'], $trxCode, $res->getStatusCode()));
+                $this->log->log('请求的路由地址:' . $this->config['url_query']);
+                $this->log->log('打印请求参数串:' . print_r($data, true));
+                $this->log->log("打印调试信息:" . sprintf("请求流水号:%s API:%s 响应状态码:%d", $data['tradeNo'], $trxCode, $res->getStatusCode()));
             }
             if ($res->getStatusCode() == 200) {
                 //不需要解码的
@@ -225,10 +225,10 @@ class  HttpRequest
             return $this->parsingMessage($content);
         } catch (\Exception $e) {
             if ($this->config['debug']) {
-                $log->log('请求的路由地址:' . $this->config['url_query']);
-                $log->log('打印请求参数串:' . print_r($data, true));
-                $log->log("打印调试信息:" . sprintf("请求流水号:%s API:%s", $data['tradeNo'], $trxCode));
-                $log->log("异常错误信息:" . $e->getMessage(), 'error');
+                $this->log->log('请求的路由地址:' . $this->config['url_query']);
+                $this->log->log('打印请求参数串:' . print_r($data, true));
+                $this->log->log("打印调试信息:" . sprintf("请求流水号:%s API:%s", $data['tradeNo'], $trxCode));
+                $this->log->log("异常错误信息:" . $e->getMessage(), 'error');
             }
             return ['return_code' => "FAIL", 'return_msg' => $e->getMessage()];
         }
@@ -287,7 +287,7 @@ class  HttpRequest
     {
         //异步请求日志
         if ($this->config['debug'] && $asynchro) {
-            $log->log('异步通知解码:' . print_r($message, true));
+            $this->log->log('异步通知解码:' . print_r($message, true));
         }
 
         if (!isset($message['INFO'])) {
@@ -328,7 +328,7 @@ class  HttpRequest
 
         //写日志
         if ($this->config['debug']) {
-            $log->log($asynchro ? '异步通知:' : '请求结果:' . '解码:' . print_r($result, true));
+            $this->log->log($asynchro ? '异步通知:' : '请求结果:' . '解码:' . print_r($result, true));
         }
 
         return $result;
@@ -359,9 +359,9 @@ class  HttpRequest
         $message = $this->getMessage($trxCode, $data);
         //写日志
         if ($this->config['debug']) {
-            $log->log("交易代码:" . $trxCode);
-            $log->log("请求的路由地址:" . $this->config['h5_url']);
-            $log->log("打印请求参数串:" . print_r($data, true));
+            $this->log->log("交易代码:" . $trxCode);
+            $this->log->log("请求的路由地址:" . $this->config['h5_url']);
+            $this->log->log("打印请求参数串:" . print_r($data, true));
         }
 
         $echo = "<form style='display:none;' id='form1' name='form1' method='post' action='" . $this->config['h5_url'] . $this->config['url_query'] . "'>";
