@@ -3,6 +3,7 @@
 namespace jzweb\sat\ccbll\Lib;
 
 use Monolog\Handler\StreamHandler;
+use Monolog\Formatter\LineFormatter;
 use Monolog\Logger;
 
 /**
@@ -20,8 +21,13 @@ class Log
     public function __construct($config)
     {
         // create a log channel
+        $dateFormat = "Y-m-d H:i:s";
+        $output = "[%datetime%] %channel%.%level_name%: %message% %context% %extra%\n";
+        $formatter = new LineFormatter($output, $dateFormat);
+        $stream = new StreamHandler($config['log_path'] . $this->fileName . '-' . date("Y-m-d") . '.log');
+        $stream->setFormatter($formatter);
         $this->log = new Logger(basename(__FILE__));
-        $this->log->pushHandler(new StreamHandler($config['log_path'] . $this->fileName . '-' . date("Y-m-d") . '.log'));
+        $this->log->pushHandler($stream);
 
     }
 
