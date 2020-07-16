@@ -169,7 +169,7 @@ class  HttpRequest
 
             //写日志
             if ($this->config['debug']) {
-                $this->log->log('报文解码:' . print_r($result, true));
+                $this->log->log('报文解码:' . json_encode($result));
             }
 
             return $result;
@@ -209,7 +209,7 @@ class  HttpRequest
             //写日志
             if ($this->config['debug']) {
                 $this->log->log('请求的路由地址:' . $this->config['url_query']);
-                $this->log->log('打印请求参数串:' . print_r($data, true));
+                $this->log->log('打印请求参数串:' . json_encode($data));
                 $this->log->log("打印调试信息:" . sprintf("请求流水号:%s API:%s 响应状态码:%d", $data['tradeNo'], $trxCode, $res->getStatusCode()));
             }
             if ($res->getStatusCode() == 200) {
@@ -226,7 +226,7 @@ class  HttpRequest
         } catch (\Exception $e) {
             if ($this->config['debug']) {
                 $this->log->log('请求的路由地址:' . $this->config['url_query']);
-                $this->log->log('打印请求参数串:' . print_r($data, true));
+                $this->log->log('打印请求参数串:' . json_encode($data));
                 $this->log->log("打印调试信息:" . sprintf("请求流水号:%s API:%s", $data['tradeNo'], $trxCode));
                 $this->log->log("异常错误信息:" . $e->getMessage(), 'error');
             }
@@ -287,7 +287,7 @@ class  HttpRequest
     {
         //异步请求日志
         if ($this->config['debug'] && $asynchro) {
-            $this->log->log('异步通知解码:' . print_r($message, true));
+            $this->log->log('异步通知解码:' . json_encode($message));
         }
 
         if (!isset($message['INFO'])) {
@@ -328,7 +328,7 @@ class  HttpRequest
 
         //写日志
         if ($this->config['debug']) {
-            $this->log->log($asynchro ? '异步通知:' : '请求结果:' . '解码:' . print_r($result, true));
+            $this->log->log(($asynchro ? '异步通知' : '请求结果') . '解码:' . json_encode($result));
         }
 
         return $result;
@@ -361,7 +361,7 @@ class  HttpRequest
         if ($this->config['debug']) {
             $this->log->log("交易代码:" . $trxCode);
             $this->log->log("请求的路由地址:" . $this->config['h5_url']);
-            $this->log->log("打印请求参数串:" . print_r($data, true));
+            $this->log->log("打印请求参数串:" . json_encode($data));
         }
 
         $echo = "<form style='display:none;' id='form1' name='form1' method='post' action='" . $this->config['h5_url'] . $this->config['url_query'] . "'>";

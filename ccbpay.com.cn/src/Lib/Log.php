@@ -1,6 +1,6 @@
 <?php
 
-namespace jzweb\sat\ccbll\Lib;
+namespace jzweb\sat\ccbpay\Lib;
 
 use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
