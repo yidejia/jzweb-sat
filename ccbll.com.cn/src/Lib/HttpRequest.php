@@ -305,14 +305,16 @@ class  HttpRequest
             throw new ServerException("验签失败");
         }
 
-
         if (isset($info['salt']) && $info['salt'] && !$asynchro) {
             /** 证书私钥解密 */
             $salt = (new Rsa())->rsaP12Decrypt($info['salt'], $this->config['private_key_path'], $this->config['private_key_keyword_path']);
-            $body = base64_decode($message['BODY']);
+            $bodyNew = base64_decode($message['BODY']);
             /** des-ede3解密 */
             $iv = openssl_random_pseudo_bytes(openssl_cipher_iv_length('des-ede3'));
-            $body = json_decode($this->convertMessage(openssl_decrypt($body, 'des-ede3', $salt, OPENSSL_RAW_DATA, $iv)), true);
+            $body = json_decode($this->convertMessage(openssl_decrypt($bodyNew, 'des-ede3', $salt, OPENSSL_RAW_DATA, $iv)), true);
+            if (!$body) {
+                $body = json_decode(mb_convert_encoding(openssl_decrypt($bodyNew, 'des-ede3', $salt, OPENSSL_RAW_DATA, $iv), 'UTF-8', 'GBK'), true);
+            }
         } else {
             if (strpos($message['BODY'], '%') !== false) {
                 $body = json_decode($this->convertMessage(base64_decode(urldecode($message['BODY']))), true);
