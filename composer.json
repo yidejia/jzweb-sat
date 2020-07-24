@@ -1,33 +1,43 @@
 {
-  "name": "jzweb/sat",
-  "description": "伊的家分帐宝",
-  "type": "library",
-  "keywords": [
-    "jzweb",
-    "sat",
-    "jzweb-sat"
-  ],
-  "homepage": "https://github.com/yidejia/jzweb-sat",
-  "authors": [
-    {
-      "name": "liusongsen",
-      "email": "liusongsen@gmail.com"
-    }
-  ],
-  "license": "MIT",
-  "require": {
-    "php": ">=7.1",
-    "guzzlehttp/guzzle": "^6.3",
-    "league/flysystem-sftp": "^1.0",
-    "monolog/monolog": "^2.1"
-  },
-  "autoload": {
-    "psr-4": {
-      "jzweb\\sat\\ccbll\\": "ccbll.com.cn/src/",
-      "jzweb\\sat\\ccbpay\\": "ccbpay.com.cn/src/",
-      "jzweb\\sat\\crbank\\": "crbank.com.cn/src/",
-      "jzweb\\sat\\jppay\\": "jppay.com.cn/src/",
-      "jzweb\\sat\\jzpay\\": "jzpay/src/"
-    }
-  }
+    "name": "jzweb/sat",
+    "description": "伊的家分帐宝",
+    "type": "library",
+    "keywords": [
+        "jzweb",
+        "sat",
+        "jzweb-sat"
+    ],
+    "homepage": "https://github.com/yidejia/jzweb-sat",
+    "authors": [
+        {
+            "name": "liusongsen",
+            "email": "liusongsen@gmail.com"
+        }
+    ],
+    "license": "MIT",
+    "require": {
+        "php": ">=7.1",
+        "guzzlehttp/guzzle": "^6.3",
+        "league/flysystem-sftp": "^1.0",
+        "monolog/monolog": "^2.1",
+        "yidejia/zipkin": "^1.1",
+        "ext-openssl": "*",
+        "ext-json": "*",
+        "ext-iconv": "*"
+    },
+    "autoload": {
+        "psr-4": {
+            "jzweb\\sat\\ccbll\\": "ccbll.com.cn/src/",
+            "jzweb\\sat\\ccbpay\\": "ccbpay.com.cn/src/",
+            "jzweb\\sat\\crbank\\": "crbank.com.cn/src/",
+            "jzweb\\sat\\jppay\\": "jppay.com.cn/src/",
+            "jzweb\\sat\\jzpay\\": "jzpay/src/"
+        }
+    },
+    "repositories": [
+        {
+            "type": "git",
+            "url": "http://gitlab.jingzhuan.cn/plugin/zipkin.git"
+        }
+    ]
 }

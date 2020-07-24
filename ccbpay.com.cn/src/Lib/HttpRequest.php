@@ -5,6 +5,7 @@ namespace jzweb\sat\ccbpay\Lib;
 use GuzzleHttp\Client;
 use jzweb\sat\ccbpay\Exception\ServerException;
 use jzweb\sat\ccbpay\Lib\Log;
+use YiDeJia\Zipkin\Native\HttpClientFactory;
 
 /**
  * 封装http请求接口
@@ -24,9 +25,11 @@ class  HttpRequest
 
     /**
      * [getNonceStr 产生随机字符串，不长于64位]
-     * @version <1.0>   2019-09-02T17:36:36+0800
-     * @param   integer $length [description]
+     *
+     * @param integer $length [description]
+     *
      * @return  [type]                           [description]
+     * @version <1.0>   2019-09-02T17:36:36+0800
      */
     private function getNonceStr($length = 64)
     {
@@ -40,9 +43,11 @@ class  HttpRequest
 
     /**
      * [infoMessage INFO报文]
-     * @version <1.0>  2019-09-02T17:18:30+0800
+     *
      * @param   [type] $trxCode                 [description]
+     *
      * @return  [type]                          [description]
+     * @version <1.0>  2019-09-02T17:18:30+0800
      */
     private function getInfoMessage($trxCode, $tradeNo, $salt, $isBase64Encode = false)
     {
@@ -64,9 +69,11 @@ class  HttpRequest
 
     /**
      * [getBodyMessage BODY报文]
-     * @version <1.0>  2019-09-03T10:21:05+0800
+     *
      * @param   [type] $data                    [description]
+     *
      * @return  [type]                          [description]
+     * @version <1.0>  2019-09-03T10:21:05+0800
      */
     private function getBodyMessage($data, $salt, $isBase64Encode = false)
     {
@@ -84,10 +91,12 @@ class  HttpRequest
 
     /**
      * [getSignMessage SIGN报文]
-     * @version <1.0>  2019-09-03T11:29:41+0800
+     *
      * @param   [type] $info                    [description]
      * @param   [type] $body                    [description]
+     *
      * @return  [type]                          [description]
+     * @version <1.0>  2019-09-03T11:29:41+0800
      */
     private function getSignMessage($info, $body, $isBase64Encode = false)
     {
@@ -105,10 +114,12 @@ class  HttpRequest
 
     /**
      * [getMessage 报文]
-     * @version <1.0>  2019-09-07T17:58:49+0800
+     *
      * @param   [type] $trxCode                 [description]
      * @param   [type] $data                    [description]
+     *
      * @return  [type]                          [description]
+     * @version <1.0>  2019-09-07T17:58:49+0800
      */
     private function getMessage($trxCode, $data)
     {
@@ -135,6 +146,7 @@ class  HttpRequest
      * 转换编码
      *
      * @param string $message
+     *
      * @return bool|string
      */
     private function convertMessage($message)
@@ -144,9 +156,11 @@ class  HttpRequest
 
     /**
      * [convertMessage 转换报文]
-     * @version <1.0>   2019-09-05T15:50:29+0800
+     *
      * @param   [type]  $message                 [description]
+     *
      * @return  [type]                           [description]
+     * @version <1.0>   2019-09-05T15:50:29+0800
      */
     private function formatMessage($message)
     {
@@ -186,7 +200,7 @@ class  HttpRequest
      * 构造请求数据
      *
      * @param string $api
-     * @param array $params
+     * @param array  $params
      *
      * @return array|mixed
      * @throws \GuzzleHttp\Exception\GuzzleException
@@ -234,6 +248,7 @@ class  HttpRequest
      * 验签操作
      *
      * @param $message
+     *
      * @return bool
      */
     private function verifySign($message, $asynchro = false)
@@ -274,9 +289,11 @@ class  HttpRequest
 
     /**
      * [parsingMessage 解析报文]
-     * @version <1.0>  2019-09-04T15:27:51+0800
+     *
      * @param   [type] $message                 [description]
+     *
      * @return  [type]                          [description]
+     * @version <1.0>  2019-09-04T15:27:51+0800
      */
     public function parsingMessage($message, $asynchro = false)
     {
@@ -334,12 +351,18 @@ class  HttpRequest
      *
      * @param $trxCode
      * @param $data
+     *
      * @return array|mixed
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
     public function apiPost($trxCode, $data)
     {
-        $client = new Client(['base_uri' => $this->config['api_url'], 'timeout' => 30]);
+        $client = (new HttpClientFactory)->create([
+            'base_uri' => $this->config['api_url'],
+            'timeout' => 30,
+            'tracing_error_throw' => false
+        ]);
+//        $client = new Client(['base_uri' => $this->config['api_url'], 'timeout' => 30]);
         return $this->post($trxCode, $data, $client);
     }
 
