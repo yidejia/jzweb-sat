@@ -7,11 +7,13 @@ use jzweb\sat\ccbpay\Handler\Query;
 use jzweb\sat\ccbpay\Handler\Trade;
 use jzweb\sat\jzpay\JzPayInterface;
 use jzweb\sat\ccbpay\Lib\Log;
+use YiDeJia\Zipkin\Native\HttpClientFactory;
 
 /**
  * 龙存管官方操作SDK
  *
  * Class client
+ *
  * @package jzweb\sat\ccbll
  */
 class Client implements JzPayInterface
@@ -50,6 +52,7 @@ class Client implements JzPayInterface
      * 转换支付类型
      *
      * @param string $payType
+     *
      * @return mixed
      */
     private function changePayType($payType)
@@ -82,7 +85,7 @@ class Client implements JzPayInterface
      * 构造请求参数
      *
      * @param string $payType 支付渠道
-     * @param string $data 支付数据
+     * @param string $data    支付数据
      * @param string $trxType 业务类型包括：12001:B2C商城消费、12002:B2C商城消费合伙人模式、12006:B2B商城消费、12007:B2B商城消费合伙人模式
      *
      * @return array
@@ -163,7 +166,7 @@ class Client implements JzPayInterface
      * @param string $appid
      * @param string $openid
      * @param string $out_trade_no
-     * @param int $total_fee
+     * @param int    $total_fee
      * @param string $body
      * @param string $ip
      * @param string $return_url
@@ -182,9 +185,10 @@ class Client implements JzPayInterface
      *
      * @param string $trade_no 交易流水号，随机生成, 每次请求都必须有, 建议用公共方法生成
      * @param string $out_trade_no
-     * @param int $total_fee
+     * @param int    $total_fee
      * @param string $body
      * @param string $ip
+     *
      * @return array|mixed
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
@@ -226,11 +230,12 @@ class Client implements JzPayInterface
      * todo 我们目前的产品,暂时没有开通该服务
      *
      * @param string $trade_no 交易流水号，随机生成, 每次请求都必须有, 建议用公共方法生成
-     * @param $out_trade_no
-     * @param $total_fee
+     * @param        $out_trade_no
+     * @param        $total_fee
      * @param string $body
      * @param string $ip
      * @param string $return_url
+     *
      * @return array|mixed
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
@@ -247,9 +252,10 @@ class Client implements JzPayInterface
      *
      * @param string $trade_no 交易流水号，随机生成, 每次请求都必须有, 建议用公共方法生成
      * @param string $out_trade_no
-     * @param int $total_fee
+     * @param int    $total_fee
      * @param string $body
      * @param string $ip
+     *
      * @return array|mixed
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
@@ -275,10 +281,11 @@ class Client implements JzPayInterface
      *
      * @param string $trade_no 交易流水号，随机生成, 每次请求都必须有, 建议用公共方法生成
      * @param string $out_trade_no
-     * @param int $total_fee
+     * @param int    $total_fee
      * @param string $body
      * @param string $ip
      * @param string $return_url
+     *
      * @return array|mixed
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
@@ -296,10 +303,11 @@ class Client implements JzPayInterface
      * @param string $appid
      * @param string $openid
      * @param string $out_trade_no
-     * @param int $total_fee
+     * @param int    $total_fee
      * @param string $body
      * @param string $ip
      * @param string $return_url
+     *
      * @return array|mixed
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
@@ -324,34 +332,43 @@ class Client implements JzPayInterface
                     return ['err_code' => 888889, "err_code_des" => "返回支付信息有缺失"];
                 }
 
-                if ($content = file_get_contents($url)) {
-                    (new Log($this->config))->log("支付链接解析:" . $content);
+                try {
+                    $client = (new HttpClientFactory())->create([
+                        'tracing_error_throw' => false
+                    ]);
+                    $response = $client->get($url);
+                    if ($content = $response->getBody()->getContents()) {
+                        (new Log($this->config))->log("支付链接解析:" . $content);
 
-                    $package = json_decode($content, true);
-                    if ($package['SUCCESS'] == 'true' && $package["ERRCODE"] == "000000") {
-                        return [
-                            'mch_id' => $package['partnerid'],
-                            'package_json' => json_encode(
-                                [
-                                    'timeStamp' => $package['timeStamp'],
-                                    'nonceStr' => $package['nonceStr'],
-                                    'package' => $package['package'],
-                                    'signType' => $package['signType'],
-                                    'paySign' => $package['paySign']
-                                ]
-                            ),
-                            'prepay_id' => substr($package['package'], 9),
-                            'result_code' => "SUCCESS",
-                            'return_code' => "SUCCESS",
-                            'sign' => md5($result['info']['salt']),
-                            'trade_type' => $this->changePayType(self::PAYTYPE_W),
-                        ];
+                        $package = json_decode($content, true);
+                        if ($package['SUCCESS'] == 'true' && $package["ERRCODE"] == "000000") {
+                            return [
+                                'mch_id' => $package['partnerid'],
+                                'package_json' => json_encode(
+                                    [
+                                        'timeStamp' => $package['timeStamp'],
+                                        'nonceStr' => $package['nonceStr'],
+                                        'package' => $package['package'],
+                                        'signType' => $package['signType'],
+                                        'paySign' => $package['paySign']
+                                    ]
+                                ),
+                                'prepay_id' => substr($package['package'], 9),
+                                'result_code' => "SUCCESS",
+                                'return_code' => "SUCCESS",
+                                'sign' => md5($result['info']['salt']),
+                                'trade_type' => $this->changePayType(self::PAYTYPE_W),
+                            ];
+                        } else {
+                            return ['err_code' => 888890, "err_code_des" => $package['ERRMSG'] . '[' . $package['ERRCODE'] . ']'];
+                        }
                     } else {
-                        return ['err_code' => 888890, "err_code_des" => $package['ERRMSG'] . '[' . $package['ERRCODE'] . ']'];
+                        return ['err_code' => 888891, "err_code_des" => "获取支付信息失败"];
                     }
-                } else {
-                    return ['err_code' => 888891, "err_code_des" => "获取支付信息失败"];
+                } catch (\Exception $e) {
+                    return ['err_code' => 888891, "err_code_des" => "获取支付信息失败，" . $e->getMessage()];
                 }
+
             } else {
                 return ['err_code' => 888892, "err_code_des" => isset($result['body']['rstMess']) ? $result['body']['rstMess'] : $result['info']['errMsg']];
             }
@@ -366,9 +383,10 @@ class Client implements JzPayInterface
      *
      * @param string $trade_no 交易流水号，随机生成, 每次请求都必须有, 建议用公共方法生成
      * @param string $out_trade_no
-     * @param int $total_fee
+     * @param int    $total_fee
      * @param string $body
      * @param string $ip
+     *
      * @return array
      */
     public function weixinMicroPay($trade_no, $out_trade_no, $total_fee, $body, $ip = "127.0.0.1", $return_url = "")
@@ -383,9 +401,10 @@ class Client implements JzPayInterface
      *
      * @param string $trade_no 交易流水号，随机生成, 每次请求都必须有, 建议用公共方法生成
      * @param string $out_trade_no
-     * @param int $total_fee
+     * @param int    $total_fee
      * @param string $body
      * @param string $ip
+     *
      * @return array|mixed
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
@@ -426,10 +445,11 @@ class Client implements JzPayInterface
      * 支付宝公众号支付，调用统一下单接口
      *
      * @param string $trade_no 交易流水号，随机生成, 每次请求都必须有, 建议用公共方法生成
-     * @param $out_trade_no
-     * @param $total_fee
+     * @param        $out_trade_no
+     * @param        $total_fee
      * @param string $body
      * @param string $ip
+     *
      * @return array
      */
     public function alipayJsPay($trade_no, $out_trade_no, $total_fee, $body, $ip = "127.0.0.1", $return_url = "")
@@ -444,10 +464,11 @@ class Client implements JzPayInterface
      *
      * @param string $trade_no 交易流水号，随机生成, 每次请求都必须有, 建议用公共方法生成
      * @param string $out_trade_no
-     * @param $total_fee
+     * @param        $total_fee
      * @param string $body
      * @param string $ip
      * @param string $return_url
+     *
      * @return array|mixed
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
@@ -463,9 +484,10 @@ class Client implements JzPayInterface
      *
      * @param string $trade_no 交易流水号，随机生成, 每次请求都必须有, 建议用公共方法生成
      * @param string $out_trade_no
-     * @param int $total_fee
+     * @param int    $total_fee
      * @param string $body
      * @param string $ip
+     *
      * @return array
      */
     public function alipayMicroPay($trade_no, $out_trade_no, $total_fee, $body, $ip = "127.0.0.1", $return_url = "")
@@ -479,11 +501,12 @@ class Client implements JzPayInterface
      * 银联扫码支付，调用统一下单接。
      *
      * @param string $trade_no 交易流水号，随机生成, 每次请求都必须有, 建议用公共方法生成
-     * @param $out_trade_no
-     * @param $total_fee
+     * @param        $out_trade_no
+     * @param        $total_fee
      * @param string $body
      * @param string $ip
      * @param string $return_url
+     *
      * @return array|mixed
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
@@ -499,9 +522,10 @@ class Client implements JzPayInterface
      *
      * @param string $trade_no 交易流水号，随机生成, 每次请求都必须有, 建议用公共方法生成
      * @param string $out_trade_no
-     * @param int $total_fee
+     * @param int    $total_fee
      * @param string $body
      * @param string $ip
+     *
      * @return array
      */
     public function unionpayMicroPay($trade_no, $out_trade_no, $total_fee, $body, $ip = "127.0.0.1", $return_url = "")
@@ -517,6 +541,7 @@ class Client implements JzPayInterface
      * 防止数据泄漏导致出现“假通知”，造成资 金损失
      *
      * @param string $xml
+     *
      * @return array|bool
      */
     public function verifySignCallBack($xml, $asynchro = true)
@@ -533,6 +558,7 @@ class Client implements JzPayInterface
      *
      * @param string $trade_no 交易流水号，随机生成, 每次请求都必须有, 建议用公共方法生成
      * @param string $out_trade_no
+     *
      * @return array|mixed
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
@@ -579,11 +605,11 @@ class Client implements JzPayInterface
      * 订单退款接口
      * 注意：如果不填手续费，那么手续费将由商户承担
      *
-     * @param string $trade_no 交易流水号，随机生成, 每次请求都必须有, 建议用公共方法生成
+     * @param string $trade_no   交易流水号，随机生成, 每次请求都必须有, 建议用公共方法生成
      * @param string $out_trade_no
      * @param string $out_refund_no
-     * @param int $total_fee    实际支付金额
-     * @param int $refund_fee   实际退款金额
+     * @param int    $total_fee  实际支付金额
+     * @param int    $refund_fee 实际退款金额
      *
      * @return array|mixed
      * @throws \GuzzleHttp\Exception\GuzzleException
