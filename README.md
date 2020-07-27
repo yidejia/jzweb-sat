@@ -5,6 +5,7 @@
 > 目前master分支要求php>=7.1，默认安装该分支
 >
 > tag后缀zk代表zipkin版本
+> 日志使用Monolog
 
 # 安装 
 
