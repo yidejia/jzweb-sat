@@ -334,7 +334,8 @@ class Client implements JzPayInterface
 
                 try {
                     $client = (new HttpClientFactory())->create([
-                        'tracing_error_throw' => false
+                        'tracing_error_throw' => false,
+                        'response_log' => true
                     ]);
                     $response = $client->get($url);
                     if ($content = $response->getBody()->getContents()) {

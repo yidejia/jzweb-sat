@@ -360,7 +360,8 @@ class  HttpRequest
         $client = (new HttpClientFactory)->create([
             'base_uri' => $this->config['api_url'],
             'timeout' => 30,
-            'tracing_error_throw' => false
+            'tracing_error_throw' => false,
+            'response_log' => true
         ]);
 //        $client = new Client(['base_uri' => $this->config['api_url'], 'timeout' => 30]);
         return $this->post($trxCode, $data, $client);
