@@ -7,6 +7,7 @@ use jzweb\sat\ccbpay\Handler\Query;
 use jzweb\sat\ccbpay\Handler\Trade;
 use jzweb\sat\jzpay\JzPayInterface;
 use jzweb\sat\ccbpay\Lib\Log;
+use jzweb\sat\ccbpay\Lib\Helpers;
 use YiDeJia\Zipkin\Native\HttpClientFactory;
 
 /**
@@ -129,6 +130,8 @@ class Client implements JzPayInterface
             'Lists1' => [],
             'rmk2' => $data['appid'] ?: "", //预留字段2，微信小程序/微信公众号支付时必输，上送微信小程序/微信公众号的APPID
             'rmk3' => $data['openid'] ?: "",    //预留字段3,微信小程序/微信公众号支付时必输，上送微信小程序/微信公众号的用户子标识OPENID
+            'clientIp' => $data['ip'],
+            'payChannel' => $this->config['payChannel'] ?: '',
         ];
 
         //子订单
@@ -328,48 +331,70 @@ class Client implements JzPayInterface
         $result = (new Trade($this->config))->anonyPay($data);
         if (isset($result['info']) || isset($result['body'])) {
             if ($result && $result['body']['rstCode'] == "0") {
-                if (!$url = $result['body']['mercOrdMsg']) {
+                if (!$mercOrdMsg = $result['body']['mercOrdMsg']) {
                     return ['err_code' => 888889, "err_code_des" => "返回支付信息有缺失"];
                 }
 
-                try {
-                    $client = (new HttpClientFactory())->create([
-                        'tracing_error_throw' => false,
-                        'response_log' => true
-                    ]);
-                    $response = $client->get($url);
-                    if ($content = $response->getBody()->getContents()) {
-                        (new Log($this->config))->log("支付链接解析:" . $content);
+                //判断是否是链接
+                if (preg_match("/^http(s)?:\\/\\/.+/", $mercOrdMsg)) {
+                    try {
+                        $client = (new HttpClientFactory())->create([
+                            'tracing_error_throw' => false,
+                            'response_log' => true
+                        ]);
+                        $response = $client->get($mercOrdMsg);
+                        if ($content = $response->getBody()->getContents()) {
+                            (new Log($this->config))->log("支付链接解析:" . $content);
 
-                        $package = json_decode($content, true);
-                        if ($package['SUCCESS'] == 'true' && $package["ERRCODE"] == "000000") {
-                            return [
-                                'mch_id' => $package['partnerid'],
-                                'package_json' => json_encode(
-                                    [
-                                        'timeStamp' => $package['timeStamp'],
-                                        'nonceStr' => $package['nonceStr'],
-                                        'package' => $package['package'],
-                                        'signType' => $package['signType'],
-                                        'paySign' => $package['paySign']
-                                    ]
-                                ),
-                                'prepay_id' => substr($package['package'], 9),
-                                'result_code' => "SUCCESS",
-                                'return_code' => "SUCCESS",
-                                'sign' => md5($result['info']['salt']),
-                                'trade_type' => $this->changePayType(self::PAYTYPE_W),
-                            ];
+                            $package = json_decode($content, true);
+                            if ($package['SUCCESS'] == 'true' && $package["ERRCODE"] == "000000") {
+                                return [
+                                    'mch_id' => $package['partnerid'],
+                                    'package_json' => json_encode(
+                                        [
+                                            'timeStamp' => $package['timeStamp'],
+                                            'nonceStr' => $package['nonceStr'],
+                                            'package' => $package['package'],
+                                            'signType' => $package['signType'],
+                                            'paySign' => $package['paySign']
+                                        ]
+                                    ),
+                                    'prepay_id' => substr($package['package'], 9),
+                                    'result_code' => "SUCCESS",
+                                    'return_code' => "SUCCESS",
+                                    'sign' => md5($result['info']['salt']),
+                                    'trade_type' => $this->changePayType(self::PAYTYPE_W),
+                                ];
+                            } else {
+                                return ['err_code' => 888890, "err_code_des" => $package['ERRMSG'] . '[' . $package['ERRCODE'] . ']'];
+                            }
                         } else {
-                            return ['err_code' => 888890, "err_code_des" => $package['ERRMSG'] . '[' . $package['ERRCODE'] . ']'];
+                            return ['err_code' => 888891, "err_code_des" => "获取支付信息失败"];
                         }
-                    } else {
-                        return ['err_code' => 888891, "err_code_des" => "获取支付信息失败"];
+                    } catch (\Exception $e) {
+                        return ['err_code' => 888891, "err_code_des" => "获取支付信息失败，" . $e->getMessage()];
                     }
-                } catch (\Exception $e) {
-                    return ['err_code' => 888891, "err_code_des" => "获取支付信息失败，" . $e->getMessage()];
-                }
+                } else {
+                    $helpers = new Helpers($this->config);
+                    $package = [
+                        "appId" => $this->config['app_id'],
+                        "timeStamp" => time(),
+                        "nonceStr" => $helpers->random(32),
+                        "package" => "prepay_id=" . $mercOrdMsg,
+                        "signType" => "MD5",
+                    ];
+                    $package['paySign'] = $helpers->makeSign($package);
 
+                    return [
+                        'mch_id' => '',
+                        'package_json' => json_encode($package),
+                        'prepay_id' => $mercOrdMsg,
+                        'result_code' => "SUCCESS",
+                        'return_code' => "SUCCESS",
+                        'sign' => md5($result['info']['salt']),
+                        'trade_type' => $this->changePayType(self::PAYTYPE_W),
+                    ];
+                }
             } else {
                 return ['err_code' => 888892, "err_code_des" => isset($result['body']['rstMess']) ? $result['body']['rstMess'] : $result['info']['errMsg']];
             }
