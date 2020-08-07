@@ -136,7 +136,7 @@ class Client implements JzPayInterface
             'tradeRmk' => $body['goods_ids'],   //填产品ID
             'tradeNum' => $body['count'],   //填写产品总数量
             'tradeAmt' => $totalFee,    //子订单商品金额
-            'platMrkAmt1' => $body['plat_mrk_fee'] ? round($body['plat_mrk_fee']) : 0,   //平台营销冲抵金额
+            'platMrkAmt1' => $body['plat_mrk_fee'] ? round($body['plat_mrk_fee'] * 100) : 0,   //平台营销冲抵金额
             'servAmt' => 0,
             'platFeeAmt1' => $platFee,  //平台分成
             'fflag' => 1,
