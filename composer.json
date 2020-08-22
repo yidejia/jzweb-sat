@@ -19,7 +19,7 @@
         "php": ">=7.1",
         "guzzlehttp/guzzle": "^6.3",
         "league/flysystem-sftp": "^1.0",
-        "monolog/monolog": "^2.1",
+        "monolog/monolog": "^1.12"
         "yidejia/zipkin": "^1.1",
         "ext-openssl": "*",
         "ext-json": "*",
