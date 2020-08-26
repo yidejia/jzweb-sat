@@ -360,7 +360,7 @@ class Client implements JzPayInterface
                 } else {
                     $helpers = new Helpers($this->config);
                     $package = [
-                        "appId" => $this->config['app_id'],
+                        "appId" => $appid,
                         "timeStamp" => time(),
                         "nonceStr" => $helpers->random(32),
                         "package" => "prepay_id=" . $mercOrdMsg,
