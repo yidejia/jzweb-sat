@@ -609,7 +609,7 @@ class Client implements JzPayInterface
                         'return_code' => "SUCCESS",
                         'sign' => $result['info']['salt'],
                         'sub_openid' => "",
-                        'third_trans_id' => "",
+                        'third_trans_id' => $result['body']['jrnno'],
                         'time_end' => $result['body']['tradt'] . $result['body']['tratm'],
                         'total_fee' => $result['body']['otratm'],
                         'trade_state' => "SUCCESS",
