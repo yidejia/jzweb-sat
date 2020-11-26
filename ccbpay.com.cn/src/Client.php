@@ -399,7 +399,7 @@ class Client implements JzPayInterface
                 return ['err_code' => 888892, "err_code_des" => isset($result['body']['rstMess']) ? $result['body']['rstMess'] : $result['info']['errMsg']];
             }
         } else {
-            return ['err_code' => $result['returnCode'], "err_code_des" => $result['returnMessage']];
+            return ['err_code' => $result['returnCode'] ?: 888893, "err_code_des" => $result['returnMessage'] ?: $result['return_msg']];
         }
     }
 
