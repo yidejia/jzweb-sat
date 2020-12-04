@@ -30,7 +30,7 @@ class Check extends BaseRequest
      */
     public function checkFileToDownload($data)
     {
-        return $this->httpRequest->apiPost('600001', $data);
+        return $this->httpRequest->apiStream('600001', $data);
     }
 
     /**

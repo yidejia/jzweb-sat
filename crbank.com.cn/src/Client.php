@@ -154,6 +154,7 @@ class Client
         return (new OrderTrade($this->config))->batOverOrderOrTrade($file, $date);
     }
 
+
     /**
      * 批量提现请求
      * @param $file
