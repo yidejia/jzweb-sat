@@ -184,4 +184,43 @@ class  HttpRequest
             return ['return_code' => "FAIL", 'return_msg' => $e->getMessage()];
         }
     }
+
+    /**
+     * 请求文件流
+     * @author changge(changge1519@gmail.com)
+     * @version <1.0>  2020-12-04T17:11:59+0800
+     * @return  mixd
+     */
+    public function apiStream($trxCode, $data)
+    {
+        $client = new Client(['base_uri' => $this->config['api_url'], 'timeout' => 30]);
+        try {
+            //报文
+            $message = $this->getMessage($trxCode, $data);
+            $message['BODY'] = urlencode($message['BODY']);
+            $message = $this->formatMessage($message);
+            $res = $client->request('POST', $this->config['url_query'], [
+                'stream' => true,
+                'headers' => [
+                    'Content-Type' => 'application/x-www-form-urlencoded',
+                    'charset' => 'GBK',
+                ],
+                'body' => $message,
+            ]);
+
+            if ($res->getStatusCode() == 200) {
+                $body = $res->getBody();
+                $content = '';
+                while (!$body->eof()) {
+                    $content .= $body->read(1024);
+                }
+
+                return $this->convertMessage($content);
+            } else {
+                throw  new ServerException("网络请求异常");
+            }
+        } catch (\Exception $e) {
+            return ['return_code' => "FAIL", 'return_msg' => $e->getMessage()];
+        }
+    }
 }
