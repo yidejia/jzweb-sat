@@ -1,6 +1,6 @@
 <?php
 
-namespace jzweb\sat\ccbll\Lib;
+namespace jzweb\sat\ccbpay\Lib;
 
 /**
  * Rsa相关类库
@@ -64,7 +64,7 @@ class Rsa
     {
         $pubKey = file_get_contents($public_key_path);
         $res = openssl_get_publickey($pubKey);
-        $result = (bool) openssl_verify($data, hex2bin(strtolower($signedMsg)), $res);
+        $result = (bool)openssl_verify($data, hex2bin(strtolower($signedMsg)), $res);
         openssl_free_key($res);
         return $result;
     }

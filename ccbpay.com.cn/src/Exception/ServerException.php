@@ -1,6 +1,6 @@
 <?php
 
-namespace jzweb\sat\ccbll\Exception;
+namespace jzweb\sat\ccbpay\Exception;
 
 /**
  * 服务端相关异常

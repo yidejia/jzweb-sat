@@ -1,8 +1,8 @@
 <?php
 
-namespace jzweb\sat\ccbll\Handler;
+namespace jzweb\sat\ccbpay\Handler;
 
-use jzweb\sat\ccbll\Handler\BaseRequest;
+use jzweb\sat\ccbpay\Handler\BaseRequest;
 
 /**
  * 龙存管
@@ -101,25 +101,5 @@ class merchant extends BaseRequest
     public function passwordSetting($data, $h5=false)
     {
         return $h5 ? $this->httpRequest->h5Post('100009', $data) : $this->httpRequest->h5Post('110009', $data);
-    }
-
-    /**
-     * [merchantCreateBatch 批量企业用户开户]
-     * @param   array  $data                    [开户信息]
-     * @return  array                           [返回数组]
-     */
-    public function merchantCreateBatch($data)
-    {
-        return $this->httpRequest->apiPost('120004', $data);
-    }
-
-    /**
-     * [merchantInfoChangeBatch 批量企业信息变更]
-     * @param   [type] $data                    [变更信息]
-     * @return  [type]                          [返回数组]
-     */
-    public function merchantInfoChangeBatch($data)
-    {
-        return $this->httpRequest->apiPost('120007', $data);
     }
 }

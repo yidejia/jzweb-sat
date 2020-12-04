@@ -3,6 +3,7 @@
 namespace jzweb\sat\jppay;
 
 use jzweb\sat\jppay\Handler\JoinPay;
+use jzweb\sat\jzpay\JzPayInterface;
 
 /**
  * 封装聚合支付操作SDK
@@ -11,9 +12,10 @@ use jzweb\sat\jppay\Handler\JoinPay;
  * Class client
  * @package jzweb\sat\crbank
  */
-class Client
+class Client implements JzPayInterface
 {
     private $joinPay;
+    private $trade_no = "";
 
     /**
      * 构造函数
@@ -42,8 +44,12 @@ class Client
      * @return array|mixed
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function weixinJsPay($appid, $openid, $out_trade_no, $total_fee, $body = "伊的家商城订单", $ip = "127.0.0.1", $return_url = "")
+    public function weixinJsPay($trade_no, $appid, $openid, $out_trade_no, $total_fee, $body = "伊的家商城订单", $ip = "127.0.0.1", $return_url = "")
     {
+        if (time() > strtotime('2020-03-31 23:55:00')) {
+            return ['error_code' => 888889, 'err_code_dsc' => '该支付渠道已停止支持'];
+        }
+
         $params = [];
         $params['body'] = $body;
         $params['sub_appid'] = $appid;
@@ -67,11 +73,17 @@ class Client
      * @param int $total_fee
      * @param string $body
      * @param string $ip
+     * @param string $return_url
+     *
      * @return array|mixed
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function weixiNative($out_trade_no, $total_fee, $body = "伊的家商城订单", $ip = "127.0.0.1")
+    public function weixiNative($trade_no, $out_trade_no, $total_fee, $body = "伊的家商城订单", $ip = "127.0.0.1", $return_url = "")
     {
+        if (time() > strtotime('2020-03-31 23:55:00')) {
+            return ['error_code' => 888889, 'err_code_dsc' => '该支付渠道已停止支持'];
+        }
+
         $params = [];
         $params['body'] = $body;
         $params['out_trade_no'] = $out_trade_no;
@@ -93,11 +105,16 @@ class Client
      * @param string $body
      * @param string $ip
      * @param string $return_url
+     *
      * @return array|mixed
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function weixinAppPay($out_trade_no, $total_fee, $body = "伊的家商城订单", $ip = "127.0.0.1", $return_url = "")
+    public function weixinAppPay($trade_no, $out_trade_no, $total_fee, $body = "伊的家商城订单", $ip = "127.0.0.1", $return_url = "")
     {
+        if (time() > strtotime('2020-03-31 23:55:00')) {
+            return ['error_code' => 888889, 'err_code_dsc' => '该支付渠道已停止支持'];
+        }
+
         $params = [];
         $params['body'] = $body;
         $params['out_trade_no'] = $out_trade_no;
@@ -119,11 +136,16 @@ class Client
      * @param int $total_fee
      * @param string $body
      * @param string $ip
+     *
      * @return array|mixed
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function weixinAppPay2($out_trade_no, $total_fee, $body = "伊的家商城订单", $ip = "127.0.0.1")
+    public function weixinAppPay2($trade_no, $out_trade_no, $total_fee, $body = "伊的家商城订单", $ip = "127.0.0.1", $return_url = "")
     {
+        if (time() > strtotime('2020-03-31 23:55:00')) {
+            return ['error_code' => 888889, 'err_code_dsc' => '该支付渠道已停止支持'];
+        }
+
         $params = [];
         $params['body'] = $body;
         $params['out_trade_no'] = $out_trade_no;
@@ -144,11 +166,16 @@ class Client
      * @param string $body
      * @param string $ip
      * @param string $return_url
+     *
      * @return array|mixed
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function weixinH5Pay($out_trade_no, $total_fee, $body = "伊的家商城订单", $ip = "127.0.0.1", $return_url = "")
+    public function weixinH5Pay($trade_no, $out_trade_no, $total_fee, $body = "伊的家商城订单", $ip = "127.0.0.1", $return_url = "")
     {
+        if (time() > strtotime('2020-03-31 23:55:00')) {
+            return ['error_code' => 888889, 'err_code_dsc' => '该支付渠道已停止支持'];
+        }
+
         $params = [];
         $params['body'] = $body;
         $params['out_trade_no'] = $out_trade_no;
@@ -172,11 +199,16 @@ class Client
      * @param string $body
      * @param string $ip
      * @param string $return_url
+     *
      * @return array|mixed
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function weixinMpPay($appid, $openid, $out_trade_no, $total_fee, $body = "伊的家商城订单", $ip = "127.0.0.1", $return_url = "")
+    public function weixinMpPay($trade_no, $appid, $openid, $out_trade_no, $total_fee, $body = "伊的家商城订单", $ip = "127.0.0.1", $return_url = "")
     {
+        if (time() > strtotime('2020-03-31 23:55:00')) {
+            return ['error_code' => 888889, 'err_code_dsc' => '该支付渠道已停止支持'];
+        }
+
         $params = [];
         $params['body'] = $body;
         $params['sub_appid'] = $appid;
@@ -200,9 +232,10 @@ class Client
      * @param int $total_fee
      * @param string $body
      * @param string $ip
+     *
      * @return array
      */
-    public function weixinMicroPay($out_trade_no, $total_fee, $body = "伊的家商城订单", $ip = "127.0.0.1")
+    public function weixinMicroPay($trade_no, $out_trade_no, $total_fee, $body = "伊的家商城订单", $ip = "127.0.0.1", $return_url = "")
     {
         //todo 暂时不支持该支付方式
         return ['error_code' => 888888, 'err_code_dsc' => '系统暂时不支持该支付方式'];
@@ -216,11 +249,16 @@ class Client
      * @param int $total_fee
      * @param string $body
      * @param string $ip
+     *
      * @return array|mixed
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function alipayNative($out_trade_no, $total_fee, $body = "伊的家商城订单", $ip = "127.0.0.1")
+    public function alipayNative($trade_no, $out_trade_no, $total_fee, $body = "伊的家商城订单", $ip = "127.0.0.1", $return_url = "")
     {
+        if (time() > strtotime('2020-03-31 23:55:00')) {
+            return ['error_code' => 888889, 'err_code_dsc' => '该支付渠道已停止支持'];
+        }
+
         $params = [];
         $params['body'] = $body;
         $params['out_trade_no'] = $out_trade_no;
@@ -241,9 +279,10 @@ class Client
      * @param $total_fee
      * @param string $body
      * @param string $ip
+     *
      * @return array
      */
-    public function alipayJsPay($out_trade_no, $total_fee, $body = "伊的家商城订单", $ip = "127.0.0.1")
+    public function alipayJsPay($trade_no, $out_trade_no, $total_fee, $body = "伊的家商城订单", $ip = "127.0.0.1", $return_url = "")
     {
         //todo 暂时不支持该支付方式
         return ['error_code' => 888888, 'err_code_dsc' => '系统暂时不支持该支付方式'];
@@ -258,11 +297,16 @@ class Client
      * @param string $body
      * @param string $ip
      * @param string $return_url
+     *
      * @return array|mixed
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function alipayH5Pay($out_trade_no, $total_fee, $body = "伊的家商城订单", $ip = "127.0.0.1", $return_url = "")
+    public function alipayH5Pay($trade_no, $out_trade_no, $total_fee, $body = "伊的家商城订单", $ip = "127.0.0.1", $return_url = "")
     {
+        if (time() > strtotime('2020-03-31 23:55:00')) {
+            return ['error_code' => 888889, 'err_code_dsc' => '该支付渠道已停止支持'];
+        }
+
         $params = [];
         $params['body'] = $body;
         $params['out_trade_no'] = $out_trade_no;
@@ -283,9 +327,10 @@ class Client
      * @param int $total_fee
      * @param string $body
      * @param string $ip
+     *
      * @return array
      */
-    public function alipayMicroPay($out_trade_no, $total_fee, $body = "伊的家商城订单", $ip = "127.0.0.1")
+    public function alipayMicroPay($trade_no, $out_trade_no, $total_fee, $body = "伊的家商城订单", $ip = "127.0.0.1", $return_url = "")
     {
         //todo 暂时不支持该支付方式
         return ['error_code' => 888888, 'err_code_dsc' => '系统暂时不支持该支付方式'];
@@ -300,11 +345,16 @@ class Client
      * @param string $body
      * @param string $ip
      * @param string $return_url
+     *
      * @return array|mixed
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function unionpayNative($out_trade_no, $total_fee, $body = "伊的家商城订单", $ip = "127.0.0.1", $return_url = "")
+    public function unionpayNative($trade_no, $out_trade_no, $total_fee, $body = "伊的家商城订单", $ip = "127.0.0.1", $return_url = "")
     {
+        if (time() > strtotime('2020-03-31 23:55:00')) {
+            return ['error_code' => 888889, 'err_code_dsc' => '该支付渠道已停止支持'];
+        }
+
         $params = [];
         $params['body'] = $body;
         $params['out_trade_no'] = $out_trade_no;
@@ -325,9 +375,10 @@ class Client
      * @param int $total_fee
      * @param string $body
      * @param string $ip
+     *
      * @return array
      */
-    public function unionpayMicroPay($out_trade_no, $total_fee, $body = "伊的家商城订单", $ip = "127.0.0.1")
+    public function unionpayMicroPay($trade_no, $out_trade_no, $total_fee, $body = "伊的家商城订单", $ip = "127.0.0.1", $return_url = "")
     {
         return ['error_code' => 888888, 'err_code_dsc' => '系统暂时不支持该支付方式'];
     }
@@ -339,6 +390,7 @@ class Client
      * 防止数据泄漏导致出现“假通知”，造成资 金损失
      *
      * @param string $xml
+     *
      * @return array|bool
      */
     public function verifySignCallBack($xml)
@@ -349,11 +401,13 @@ class Client
     /**
      * 订单查询接口
      *
+     * @param string $trade_no
      * @param string $out_trade_no
+     *
      * @return array|mixed
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function orderQuery($out_trade_no)
+    public function orderQuery($trade_no, $out_trade_no)
     {
         return $this->joinPay->orderQuery($out_trade_no);
     }
@@ -362,15 +416,17 @@ class Client
     /**
      * 订单退款接口
      *
+     * @param string $trade_no
      * @param string $out_trade_no
      * @param string $out_refund_no
      * @param int $total_fee
      * @param int $refund_fee
+     * @param string $body
      *
      * @return array|mixed
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function orderRefund($out_trade_no, $out_refund_no, $total_fee, $refund_fee)
+    public function orderRefund($trade_no, $out_trade_no, $out_refund_no, $total_fee, $refund_fee, $mrk_fee = 0, $body = "伊的家商城订单", $trxType = '12008')
     {
         return $this->joinPay->orderRefund($out_trade_no, $out_refund_no, $total_fee, $refund_fee);
     }
@@ -379,11 +435,14 @@ class Client
     /**
      * 订单退款进度查询接口
      *
+     * @param string $trade_no
      * @param string $out_trade_no
+     * @param string $out_refund_no
+     *
      * @return array|mixed
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function orderRefundQuery($out_trade_no)
+    public function orderRefundQuery($trade_no, $out_trade_no, $out_refund_no = "")
     {
         return $this->joinPay->orderRefundQuery($out_trade_no);
     }

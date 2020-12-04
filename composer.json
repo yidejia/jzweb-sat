@@ -18,12 +18,16 @@
   "require": {
     "php": ">=7.1",
     "guzzlehttp/guzzle": "^6.3",
-    "league/flysystem-sftp": "^1.0"
+    "league/flysystem-sftp": "^1.0",
+    "monolog/monolog": "^1.12"
   },
   "autoload": {
     "psr-4": {
+      "jzweb\\sat\\ccbll\\": "ccbll.com.cn/src/",
+      "jzweb\\sat\\ccbpay\\": "ccbpay.com.cn/src/",
       "jzweb\\sat\\crbank\\": "crbank.com.cn/src/",
-      "jzweb\\sat\\jppay\\": "jppay.com.cn/src/"
+      "jzweb\\sat\\jppay\\": "jppay.com.cn/src/",
+      "jzweb\\sat\\jzpay\\": "jzpay/src/"
     }
   }
 }

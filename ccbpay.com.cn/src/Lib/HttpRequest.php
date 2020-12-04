@@ -1,10 +1,10 @@
 <?php
 
-namespace jzweb\sat\ccbll\Lib;
+namespace jzweb\sat\ccbpay\Lib;
 
 use GuzzleHttp\Client;
-use jzweb\sat\ccbll\Exception\ServerException;
-use jzweb\sat\ccbll\Lib\Log;
+use jzweb\sat\ccbpay\Exception\ServerException;
+use jzweb\sat\ccbpay\Lib\Log;
 
 /**
  * 封装http请求接口
@@ -139,7 +139,7 @@ class  HttpRequest
      */
     private function convertMessage($message)
     {
-        return @iconv('GB2312', 'UTF-8//IGNORE', $message);
+        return @iconv('GB2312', 'UTF-8', $message);
     }
 
     /**
@@ -213,11 +213,6 @@ class  HttpRequest
                 $this->log->log("打印调试信息:" . sprintf("请求流水号:%s API:%s 响应状态码:%d", $data['tradeNo'], $trxCode, $res->getStatusCode()));
             }
             if ($res->getStatusCode() == 200) {
-                //不需要解码的
-                if (in_array($trxCode, ['600001'])) {
-                    return $res->getBody()->getContents();
-                }
-
                 $content = $this->formatMessage($res->getBody()->getContents());
             } else {
                 throw  new ServerException("网络请求异常");
@@ -233,6 +228,7 @@ class  HttpRequest
             return ['return_code' => "FAIL", 'return_msg' => $e->getMessage()];
         }
     }
+
 
     /**
      * 验签操作
@@ -300,9 +296,10 @@ class  HttpRequest
         }
 
         //验签操作 TODO
-        if (!in_array($info['trxCode'], ['400005', '200007', '400038']) && !$this->verifySign($message, $asynchro)) {
+        if (!in_array($info['trxCode'], ['400005', '200007']) && !$this->verifySign($message, $asynchro)) {
             throw new ServerException("验签失败");
         }
+
 
         if (isset($info['salt']) && $info['salt'] && !$asynchro) {
             /** 证书私钥解密 */
@@ -310,8 +307,7 @@ class  HttpRequest
             $body = base64_decode($message['BODY']);
             /** des-ede3解密 */
             $iv = openssl_random_pseudo_bytes(openssl_cipher_iv_length('des-ede3'));
-            $description = openssl_decrypt($body, 'des-ede3', $salt, OPENSSL_RAW_DATA, $iv);
-            $body = json_decode($this->convertMessage($description), true);
+            $body = json_decode($this->convertMessage(openssl_decrypt($body, 'des-ede3', $salt, OPENSSL_RAW_DATA, $iv)), true);
         } else {
             if (strpos($message['BODY'], '%') !== false) {
                 $body = json_decode($this->convertMessage(base64_decode(urldecode($message['BODY']))), true);
@@ -371,44 +367,5 @@ class  HttpRequest
         $echo .= "<script type='text/javascript'>function load_submit(){document.form1.submit()}load_submit();</script>";
 
         echo $echo;
-    }
-
-    /**
-     * 请求文件流
-     * @author changge(changge1519@gmail.com)
-     * @version <1.0>  2020-12-04T17:11:59+0800
-     * @return  mixd
-     */
-    public function apiStream($trxCode, $data)
-    {
-        $client = new Client(['base_uri' => $this->config['api_url'], 'timeout' => 30]);
-        try {
-            //报文
-            $message = $this->getMessage($trxCode, $data);
-            $message['BODY'] = urlencode($message['BODY']);
-            $message = $this->formatMessage($message);
-            $res = $client->request('POST', $this->config['url_query'], [
-                'stream' => true,
-                'headers' => [
-                    'Content-Type' => 'application/x-www-form-urlencoded',
-                    'charset' => 'GBK',
-                ],
-                'body' => $message,
-            ]);
-
-            if ($res->getStatusCode() == 200) {
-                $body = $res->getBody();
-                $content = '';
-                while (!$body->eof()) {
-                    $content .= $body->read(1024);
-                }
-
-                return $this->convertMessage($content);
-            } else {
-                throw  new ServerException("网络请求异常");
-            }
-        } catch (\Exception $e) {
-            return ['return_code' => "FAIL", 'return_msg' => $e->getMessage()];
-        }
     }
 }
