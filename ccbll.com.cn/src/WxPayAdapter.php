@@ -30,9 +30,11 @@ class WxPayAdapter extends Client
      * @param string $trade_no 交易流水号，随机生成, 每次请求都必须有, 建议用公共方法生成
      * @param url $file_url 软链接，外部可访问
      * @param string $oper_type 操作类型：01:新增，02:修改，默认为01
+     * @param string $mch_no 存管系统用户编号
+     * @param string $pic_type 文件类型：01  法人身份证正面图片；02  法人身份证反面图片；03  手持身份证图片；04  统一信用代码图片；05  授权书图片；06  被授权人身份证正面；07  被授权人身份证反面；08  开店合作协议；09  店铺图片；10  收款人身份证正面；11  收款人身份证反面；12  开店证明材料文件
      * @return array
      */
-    public function uploadFile($trade_no, $file_url, $oper_type = "01")
+    public function uploadFile($trade_no, $file_url, $oper_type = "01", $mch_no = '', $pic_type = '01')
     {
         $data = [
             "tradeNo" => $trade_no,
@@ -40,6 +42,11 @@ class WxPayAdapter extends Client
             "fileType" => "01", //文件格式:01:图片,02:PDF文件
             "operType" => $oper_type,
         ];
+
+        if ($oper_type == '02') {
+            $data['mbrCode'] = $mch_no;
+            $data['picType'] = $pic_type;
+        }
 
         $result = (new Client($this->config))->fileUpload($data);
 
