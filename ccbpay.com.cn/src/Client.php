@@ -125,7 +125,6 @@ class Client implements JzPayInterface
         ];
 
         $params['Lists'] = $body['Lists'];
-        var_dump($params);die;
         return $params;
     }
 
