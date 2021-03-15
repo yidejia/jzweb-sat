@@ -93,14 +93,7 @@ class Client implements JzPayInterface
      */
     private function buildRequestParams($payType, $data, $trxType = "12001")
     {
-        $body = $data['body'];
-        //总订单金额
-        $totalFee = round($data['total_fee'] + ($body['plat_mrk_fee'] ? round($body['plat_mrk_fee'] * 100) : 0)); //需要加上平台冲销金额
-        //平台分成
-        $platFee = round($body['plat_fee'] * 100);
-        if (!$platFee) {
-            $platFee = $body['plat_rate'] ? round($totalFee * $body['plat_rate']) : round($totalFee - ($body['mch_fee'] + $body['partner_fee']) * 100);
-        }
+        $body = $this->buildBodyData($data['out_trade_no'], $data['total_fee'], $data['body']);
 
         $params = [
             'tradeNo' => $data['trade_no'],
@@ -115,11 +108,11 @@ class Client implements JzPayInterface
             'bgRetUrl' => $this->config['callback_pay_url'],    //后台通知url
             'payMode' => 2,
             'ccy' => 'CNY',
-            'platFeeAmt' => $platFee,   //平台分成
-            'platMrkAmt' => $body['plat_mrk_fee'] ? round($body['plat_mrk_fee'] * 100) : 0,    //平台营销冲抵金额（分）
-            'prdSumAmt' => $totalFee,   //商品总金额，单位分
+            'platFeeAmt' => $body['plat_fee'],   //平台分成
+            'platMrkAmt' => $body['plat_mrk_fee'],    //平台营销冲抵金额（分）
+            'prdSumAmt' => $body['total_fee'],   //商品总金额，单位分
             'servSumAmt' => 0,
-            'profitSumAmt' => $body['partner_no'] && ($body['mch_no'] != $body['partner_no']) ? round($body['partner_fee'] * 100) : 0, //合伙人总金额
+            'profitSumAmt' => $body['partner_fee'], //合伙人总金额
             'cnt' => 1,
             'Lists' => [],
             'ordValTmUnit' => 'D',  //订单有效时间单位,D:日、H:时、M:分、S:秒
@@ -134,32 +127,89 @@ class Client implements JzPayInterface
             'payChannel' => $this->config['payChannel'] ?: '',
         ];
 
-        //子订单
-        $lists = [
-            'tradeOrdNo' => $data['out_trade_no'],
-            'mercMbrCode' => $body['mch_no'],   //收款方商户编号
-            'tradeNm' => $body['goods_str'],    //填产品商品串
-            'tradeRmk' => $body['goods_ids'],   //填产品ID
-            'tradeNum' => $body['count'],   //填写产品总数量
-            'tradeAmt' => $totalFee,    //子订单商品金额
-            'platMrkAmt1' => $body['plat_mrk_fee'] ? round($body['plat_mrk_fee'] * 100) : 0,   //平台营销冲抵金额
-            'servAmt' => 0,
-            'platFeeAmt1' => $platFee,  //平台分成
-            'fflag' => 1,
-            'cMbl' => $body['mobile'],  //不填无法进行确认收货
-        ];
-
-        //合伙人分账信息
-        if ($body['partner_no'] && ($body['mch_no'] != $body['partner_no'])) {
-            $lists['partnerNo'] = $body['partner_no'];
-            $lists['profitAmt'] = round($body['partner_fee'] * 100);    //合伙人总金额
-            $lists['profitTaxAmt'] = 0;    //合伙人缴税金额，默认0
-        }
-        $params['Lists'][] = $lists;
-
+        $params['Lists'] = $body['Lists'];
+        var_dump($params);die;
         return $params;
     }
 
+    /**
+     * 构造BODY数据
+     * @author changge(changge1519@gmail.com)
+     * @version <1.0>  2021-03-15T10:17:02+0800
+     * @return  array
+     */
+    private function buildBodyData($outTradeNo, $totalFee, $body)
+    {
+        $data = [];
+        $lists = [];
+        if (count($body) == count($body, 1)) {
+            $data = $body;
+            $data['plat_mrk_fee'] = $body['plat_mrk_fee'] ? round($body['plat_mrk_fee'] * 100) : 0;
+            $data['total_fee'] = round($totalFee + $data['plat_mrk_fee']); //订单总金额，需要加上平台冲销金额
+            $data['plat_fee'] = round($body['plat_fee'] * 100); //平台分成
+            $data['partner_fee'] = 0; //合伙分成
+            if (!$data['plat_fee']) {
+                $data['plat_fee'] = $body['plat_rate'] ? round($data['total_fee'] * $body['plat_rate']) : round($data['total_fee'] - ($body['mch_fee'] + $body['partner_fee']) * 100);
+            }
+            //子订单
+            $list = [
+                'tradeOrdNo' => $outTradeNo,
+                'mercMbrCode' => $body['mch_no'],   //收款方商户编号
+                'tradeNm' => $body['goods_str'],    //填产品商品串
+                'tradeRmk' => $body['goods_ids'],   //填产品ID
+                'tradeNum' => $body['count'],   //填写产品总数量
+                'tradeAmt' => $data['total_fee'],    //子订单商品金额
+                'platMrkAmt1' => $body['plat_mrk_fee'] ? round($body['plat_mrk_fee'] * 100) : 0,   //平台营销冲抵金额
+                'servAmt' => 0,
+                'platFeeAmt1' => $data['plat_fee'],  //平台分成
+                'fflag' => 1,
+                'cMbl' => $body['mobile'],  //不填无法进行确认收货
+            ];
+
+            //合伙人分账信息
+            if ($body['partner_no'] && ($body['mch_no'] != $body['partner_no'])) {
+                $list['partnerNo'] = $body['partner_no'];
+                $list['profitAmt'] = $data['partner_fee'] = $body['partner_fee'] ? round($body['partner_fee'] * 100) : round($totalFee * (float) $body['partner_rate']); //合伙人总金额
+                $list['profitTaxAmt'] = 0;    //合伙人缴税金额，默认0
+            }
+            $lists[] = $list;
+        } else {
+            $data['plat_fee'] = 0;
+            $data['plat_mrk_fee'] = 0;
+            $data['partner_fee'] = 0;
+            foreach ($body as $item) {
+                $data['plat_mrk_fee'] += $platMrkFee = $item['plat_mrk_fee'] ? round($item['plat_mrk_fee'] * 100) : 0; //平台营销冲抵金额
+                $data['plat_fee'] += $platFee = $item['plat_fee'] ? round($item['plat_fee'] * 100) : round($item['total_fee'] * 100 * $item['plat_rate']); //平台分成
+                $list = [
+                    'tradeOrdNo' => $item['order_code'],
+                    'mercMbrCode' => $item['mch_no'], //收款方商户编号
+                    'tradeNm' => $item['goods_str'], //填产品商品串
+                    'tradeRmk' => $item['goods_ids'], //填产品ID
+                    'tradeNum' => $item['count'], //填写产品总数量
+                    'tradeAmt' => round($item['total_fee'] * 100), //子订单商品金额
+                    'platMrkAmt1' => $platMrkFee,
+                    'servAmt' => 0,
+                    'platFeeAmt1' => $platFee,
+                    'fflag' => 1,
+                    'cMbl' => $item['mobile'], //不填无法进行确认收货
+                ];
+
+                if ($item['partner_no'] && ($item['mch_no'] != $item['partner_no'])) {
+                    $data['partner_fee'] += $partnerFee = $item['partner_fee'] ? round($item['partner_fee'] * 100) : round($item['total_fee'] * 100 * (float) $item['partner_rate']); //合伙人总金额
+                    $list['partnerNo'] = $item['partner_no'];
+                    $list['profitAmt'] = $partnerFee;
+                    $list['profitTaxAmt'] = 0; //合伙人缴税金额，默认0
+                }
+
+                $lists[] = $list;
+            }
+
+            $data['total_fee'] = round($totalFee + $data['plat_mrk_fee']); //订单总金额，需要加上平台冲销金额
+        }
+
+        $data['Lists'] = $lists;
+        return $data;
+    }
 
     /**
      * 微信公众号支付
