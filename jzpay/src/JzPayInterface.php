@@ -230,6 +230,7 @@ interface JzPayInterface
      * 订单退款接口
      *
      * @param string $trade_no 交易流水号全局唯一,交易流水号全局唯一,目前指有建行的通道需要该参数,其他行内通道不需要该参数
+     * @param string $out_order_no
      * @param string $out_trade_no
      * @param string $out_refund_no
      * @param int $total_fee
@@ -239,7 +240,7 @@ interface JzPayInterface
      * @return array|mixed
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function orderRefund($trade_no, $out_trade_no, $out_refund_no, $total_fee, $refund_fee, $mrk_fee = 0, $body = "伊的家商城订单", $trxType = '12008');
+    public function orderRefund($trade_no, $out_order_no, $out_trade_no, $out_refund_no, $total_fee, $refund_fee, $mrk_fee = 0, $body = "伊的家商城订单", $trxType = '12008');
 
 
     /**
