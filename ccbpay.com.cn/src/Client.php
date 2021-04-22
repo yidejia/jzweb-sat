@@ -679,7 +679,8 @@ class Client implements JzPayInterface
      * 注意：如果不填手续费，那么手续费将由商户承担
      *
      * @param string $trade_no   交易流水号，随机生成, 每次请求都必须有, 建议用公共方法生成
-     * @param string $out_trade_no
+     * @param string $out_order_no 主单号
+     * @param string $out_trade_no 子单号
      * @param string $out_refund_no
      * @param int    $total_fee  实际支付金额
      * @param int    $refund_fee 实际退款金额
@@ -687,7 +688,7 @@ class Client implements JzPayInterface
      * @return array|mixed
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function orderRefund($trade_no, $out_trade_no, $out_refund_no, $total_fee, $refund_fee, $mrk_fee = 0, $body = "伊的家商城订单", $trxType = '12008')
+    public function orderRefund($trade_no, $out_order_no, $out_trade_no, $out_refund_no, $total_fee, $refund_fee, $mrk_fee = 0, $body = "伊的家商城订单", $trxType = '12008')
     {
         //总订单金额
         $total_amount = $trxType == '12008' ? round($total_fee + $body['plat_mrk_fee'] * 100) : round($total_fee);
@@ -699,7 +700,7 @@ class Client implements JzPayInterface
             'refundOrdNo' => $out_refund_no,
             'trxType' => $trxType, //12008:商品退款，12014:佣金退款
             'operType' => $total_amount == $refund_amount ? '21' : '22', //针对子订单，子订单退全额就是全额退款
-            'oriOrdNo' => $out_trade_no,
+            'oriOrdNo' => $out_order_no,
             'oriOrdAmt' => round($refund_fee),
             'refundDt' => date('Ymd'),
             'refundTm' => date('His'),
