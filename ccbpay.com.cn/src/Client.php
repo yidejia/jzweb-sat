@@ -5,9 +5,9 @@ namespace jzweb\sat\ccbpay;
 use jzweb\sat\ccbpay\Handler\Notice;
 use jzweb\sat\ccbpay\Handler\Query;
 use jzweb\sat\ccbpay\Handler\Trade;
-use jzweb\sat\jzpay\JzPayInterface;
-use jzweb\sat\ccbpay\Lib\Log;
 use jzweb\sat\ccbpay\Lib\Helpers;
+use jzweb\sat\ccbpay\Lib\Log;
+use jzweb\sat\jzpay\JzPayInterface;
 use YiDeJia\Zipkin\Native\HttpClientFactory;
 
 /**
@@ -23,21 +23,20 @@ class Client implements JzPayInterface
     private $config;
 
     //支付类型汇总
-    const PAYTYPE_C = 'C';  //C:微信APP支付
-    const PAYTYPE_D = 'D';  //D:支付宝APP支付
-    const PAYTYPE_H = 'H';  //H:一码付（H5二维码）
-    const PAYTYPE_I = 'I';  //I:微信扫码支付
-    const PAYTYPE_J = 'J';  //J:微信公众号支付
-    const PAYTYPE_K = 'K';  //K:建行信用卡分期支付
-    const PAYTYPE_L = 'L';  //L:银联在线
-    const PAYTYPE_M = 'M';  //M:建行网关对公
-    const PAYTYPE_N = 'N';  //N:建行网关对私
-    const PAYTYPE_P = 'P';  //P:支付宝扫码
-    const PAYTYPE_Q = 'Q';  //Q:一码付（自定义二维码）
-    const PAYTYPE_R = 'R';  //R:龙支付扫码
-    const PAYTYPE_S = 'S';  //S:龙支付APP支付
-    const PAYTYPE_W = 'W';  //W:微信小程序支付
-
+    const PAYTYPE_C = 'C'; //C:微信APP支付
+    const PAYTYPE_D = 'D'; //D:支付宝APP支付
+    const PAYTYPE_H = 'H'; //H:一码付（H5二维码）
+    const PAYTYPE_I = 'I'; //I:微信扫码支付
+    const PAYTYPE_J = 'J'; //J:微信公众号支付
+    const PAYTYPE_K = 'K'; //K:建行信用卡分期支付
+    const PAYTYPE_L = 'L'; //L:银联在线
+    const PAYTYPE_M = 'M'; //M:建行网关对公
+    const PAYTYPE_N = 'N'; //N:建行网关对私
+    const PAYTYPE_P = 'P'; //P:支付宝扫码
+    const PAYTYPE_Q = 'Q'; //Q:一码付（自定义二维码）
+    const PAYTYPE_R = 'R'; //R:龙支付扫码
+    const PAYTYPE_S = 'S'; //S:龙支付APP支付
+    const PAYTYPE_W = 'W'; //W:微信小程序支付
 
     /**
      * 构造函数
@@ -59,20 +58,20 @@ class Client implements JzPayInterface
     private function changePayType($payType)
     {
         $payTypes = [
-            'C' => 'trade.weixin.apppay',    //C:微信APP支付
-            'D' => 'trade.alipay.apppay',    //D:支付宝APP支付
-            'H' => 'trade.unionpay.native',  //H:一码付（H5二维码）
-            'I' => 'trade.weixin.native',    //I:微信扫码支付
-            'J' => 'trade.weixin.jspay',     //J:微信公众号支付
-            'K' => '',                       //K:建行信用卡分期支付
-            'L' => '',                       //L:银联在线
-            'M' => '',                       //M:建行网关对公
-            'N' => '',                       //N:建行网关对私
-            'P' => 'trade.alipay.native',    //P:支付宝扫码
-            'Q' => '',                       //Q:一码付（自定义二维码）
-            'R' => '',                       //R:龙支付扫码
-            'S' => '',                       //S:龙支付APP支付
-            'W' => 'trade.weixin.mppay',     //W:微信小程序支付
+            'C' => 'trade.weixin.apppay', //C:微信APP支付
+            'D' => 'trade.alipay.apppay', //D:支付宝APP支付
+            'H' => 'trade.unionpay.native', //H:一码付（H5二维码）
+            'I' => 'trade.weixin.native', //I:微信扫码支付
+            'J' => 'trade.weixin.jspay', //J:微信公众号支付
+            'K' => '', //K:建行信用卡分期支付
+            'L' => '', //L:银联在线
+            'M' => '', //M:建行网关对公
+            'N' => '', //N:建行网关对私
+            'P' => 'trade.alipay.native', //P:支付宝扫码
+            'Q' => '', //Q:一码付（自定义二维码）
+            'R' => '', //R:龙支付扫码
+            'S' => '', //S:龙支付APP支付
+            'W' => 'trade.weixin.mppay', //W:微信小程序支付
         ];
         //返回转换后的类型
         if (isset($payTypes[strtoupper($payType)])) {
@@ -104,25 +103,25 @@ class Client implements JzPayInterface
             'trAmt' => round($data['total_fee']), //实际支付金额
             'tradt' => date('Ymd'), //交易日期
             'tratm' => date('His'), //交易时间
-            'pageRetUrl' => $data['return_url'],    //页面返回url
-            'bgRetUrl' => $this->config['callback_pay_url'],    //后台通知url
+            'pageRetUrl' => $data['return_url'], //页面返回url
+            'bgRetUrl' => $this->config['callback_pay_url'], //后台通知url
             'payMode' => 2,
             'ccy' => 'CNY',
-            'platFeeAmt' => $body['plat_fee'],   //平台分成
-            'platMrkAmt' => $body['plat_mrk_fee'],    //平台营销冲抵金额（分）
-            'prdSumAmt' => $body['total_fee'],   //商品总金额，单位分
+            'platFeeAmt' => $body['plat_fee'], //平台分成
+            'platMrkAmt' => $body['plat_mrk_fee'], //平台营销冲抵金额（分）
+            'prdSumAmt' => $body['total_fee'], //商品总金额，单位分
             'servSumAmt' => 0,
             'profitSumAmt' => $body['partner_fee'], //合伙人总金额
-            'cnt' => 1,
+            'cnt' => count($body['Lists']),
             'Lists' => [],
-            'ordValTmUnit' => 'D',  //订单有效时间单位,D:日、H:时、M:分、S:秒
+            'ordValTmUnit' => 'D', //订单有效时间单位,D:日、H:时、M:分、S:秒
             'ordValTmCnt' => 2,
             'sumExpressAmt' => 0,
             'sumInsuranceAmt' => 0,
             'cntlist1' => 0,
             'Lists1' => [],
             'rmk2' => $data['appid'] ?: "", //预留字段2，微信小程序/微信公众号支付时必输，上送微信小程序/微信公众号的APPID
-            'rmk3' => $data['openid'] ?: "",    //预留字段3,微信小程序/微信公众号支付时必输，上送微信小程序/微信公众号的用户子标识OPENID
+            'rmk3' => $data['openid'] ?: "", //预留字段3,微信小程序/微信公众号支付时必输，上送微信小程序/微信公众号的用户子标识OPENID
             'clientIp' => $data['ip'],
             'payChannel' => $this->config['payChannel'] ?: '',
         ];
@@ -153,23 +152,23 @@ class Client implements JzPayInterface
             //子订单
             $list = [
                 'tradeOrdNo' => $outTradeNo,
-                'mercMbrCode' => $body['mch_no'],   //收款方商户编号
-                'tradeNm' => $body['goods_str'],    //填产品商品串
-                'tradeRmk' => $body['goods_ids'],   //填产品ID
-                'tradeNum' => $body['count'],   //填写产品总数量
-                'tradeAmt' => $data['total_fee'],    //子订单商品金额
-                'platMrkAmt1' => $body['plat_mrk_fee'] ? round($body['plat_mrk_fee'] * 100) : 0,   //平台营销冲抵金额
+                'mercMbrCode' => $body['mch_no'], //收款方商户编号
+                'tradeNm' => $body['goods_str'], //填产品商品串
+                'tradeRmk' => $body['goods_ids'], //填产品ID
+                'tradeNum' => $body['count'], //填写产品总数量
+                'tradeAmt' => $data['total_fee'], //子订单商品金额
+                'platMrkAmt1' => $body['plat_mrk_fee'] ? round($body['plat_mrk_fee'] * 100) : 0, //平台营销冲抵金额
                 'servAmt' => 0,
-                'platFeeAmt1' => $data['plat_fee'],  //平台分成
+                'platFeeAmt1' => $data['plat_fee'], //平台分成
                 'fflag' => 1,
-                'cMbl' => $body['mobile'],  //不填无法进行确认收货
+                'cMbl' => $body['mobile'], //不填无法进行确认收货
             ];
 
             //合伙人分账信息
             if ($body['partner_no'] && ($body['mch_no'] != $body['partner_no'])) {
                 $list['partnerNo'] = $body['partner_no'];
                 $list['profitAmt'] = $data['partner_fee'] = $body['partner_fee'] ? round($body['partner_fee'] * 100) : round($totalFee * (float) $body['partner_rate']); //合伙人总金额
-                $list['profitTaxAmt'] = 0;    //合伙人缴税金额，默认0
+                $list['profitTaxAmt'] = 0; //合伙人缴税金额，默认0
             }
             $lists[] = $list;
         } else {
@@ -252,7 +251,7 @@ class Client implements JzPayInterface
             'total_fee' => $total_fee,
             'body' => $body,
             'ip' => $ip,
-            'return_url' => $return_url
+            'return_url' => $return_url,
         ];
         $data = $this->buildRequestParams(self::PAYTYPE_I, $params);
         $result = (new Trade($this->config))->anonyPay($data);
@@ -321,9 +320,9 @@ class Client implements JzPayInterface
                     'pay_type' => "ccbpay",
                     "original_id" => $this->config['original_id'],
                     "app_id" => $this->config['app_id'],
-                    "prepay_id" => md5(json_encode(func_get_args()))
+                    "prepay_id" => md5(json_encode(func_get_args())),
                 ]
-            )
+            ),
         ];
     }
 
@@ -374,7 +373,7 @@ class Client implements JzPayInterface
             'total_fee' => $total_fee,
             'body' => $body,
             'ip' => $ip,
-            'return_url' => $return_url
+            'return_url' => $return_url,
         ];
         $data = $this->buildRequestParams(self::PAYTYPE_W, $params);
         $result = (new Trade($this->config))->anonyPay($data);
@@ -389,7 +388,7 @@ class Client implements JzPayInterface
                     try {
                         $client = (new HttpClientFactory())->create([
                             'tracing_error_throw' => false,
-                            'response_log' => true
+                            'response_log' => true,
                         ]);
                         $response = $client->get($mercOrdMsg);
                         if ($content = $response->getBody()->getContents()) {
@@ -405,7 +404,7 @@ class Client implements JzPayInterface
                                             'nonceStr' => $package['nonceStr'],
                                             'package' => $package['package'],
                                             'signType' => $package['signType'],
-                                            'paySign' => $package['paySign']
+                                            'paySign' => $package['paySign'],
                                         ]
                                     ),
                                     'prepay_id' => substr($package['package'], 9),
@@ -491,7 +490,7 @@ class Client implements JzPayInterface
             'total_fee' => $total_fee,
             'body' => $body,
             'ip' => $ip,
-            'return_url' => $return_url
+            'return_url' => $return_url,
         ];
         $data = $this->buildRequestParams(self::PAYTYPE_P, $params);
         $result = (new Trade($this->config))->anonyPay($data);
@@ -609,7 +608,6 @@ class Client implements JzPayInterface
         return ['error_code' => 888888, 'err_code_dsc' => '系统暂时不支持该支付方式'];
     }
 
-
     /**
      * 回调通知验签
      * 商户系统对于支付结果通知的内容一定要做签名验证
@@ -709,7 +707,7 @@ class Client implements JzPayInterface
             'tradeNm' => $body['goods_str'],
             'tradeRmk' => $body['goods_ids'],
             'tradeNum' => 1,
-            'tradeAmt' => $trxType == '12008' ? $refund_amount : 0,    //需要加上冲抵金额
+            'tradeAmt' => $trxType == '12008' ? $refund_amount : 0, //需要加上冲抵金额
             'feeAmt' => 0, //从商户余额账户扣除一笔手续费到平台账户，应保持为0
             'expressAmt' => 0,
             'insuranceAmt' => 0,
@@ -720,7 +718,7 @@ class Client implements JzPayInterface
         ];
 
         if ($trxType == '12014') {
-            $data['rmk1'] = $body['partner_no'];    //当业务类型为12014-佣金退款，该字段传合伙人编号
+            $data['rmk1'] = $body['partner_no']; //当业务类型为12014-佣金退款，该字段传合伙人编号
         }
 
         $result = (new Trade($this->config))->refund($data);
@@ -746,14 +744,14 @@ class Client implements JzPayInterface
                     'total_fee' => $total_fee,
                     'transaction_id' => $this->config['PID'] . $result['body']['jrnno'],
                     'confirmInfo' => isset($comfirmResult['body'])
-                        ? array_merge([
-                            'result_code' => 'SUCCESS',
-                            'return_code' => 'SUCCESS',
-                        ], $comfirmResult['body'])
-                        : [
-                            'err_code' => $comfirmResult['info']['retCode'],
-                            "err_code_des" => $comfirmResult['info']['errMsg']
-                        ],
+                    ? array_merge([
+                        'result_code' => 'SUCCESS',
+                        'return_code' => 'SUCCESS',
+                    ], $comfirmResult['body'])
+                    : [
+                        'err_code' => $comfirmResult['info']['retCode'],
+                        "err_code_des" => $comfirmResult['info']['errMsg'],
+                    ],
                 ];
             } else {
                 return ['err_code' => $result['info']['retCode'], "err_code_des" => $result['info']['errMsg']];
