@@ -2,7 +2,6 @@
 
 namespace jzweb\sat\jzpay;
 
-
 /**
  * 经传集团聚合支付接口
  *
@@ -133,7 +132,6 @@ interface JzPayInterface
      */
     public function alipayNative($trade_no, $out_trade_no, $total_fee, $body, $ip = "127.0.0.1", $return_url = "");
 
-
     /**
      * trade.alipay.jspay
      * 支付宝公众号支付，调用统一下单接口
@@ -146,6 +144,21 @@ interface JzPayInterface
      * @return array
      */
     public function alipayJsPay($trade_no, $out_trade_no, $total_fee, $body, $ip = "127.0.0.1", $return_url = "");
+
+    /**
+     * trade.alipay.apppay
+     * 支付宝APP支付，调用统一下单接口【拉起支付宝APP支付,支付宝官方原生的】
+     *
+     * @param string $trade_no 交易流水号全局唯一,交易流水号全局唯一,目前指有建行的通道需要该参数,其他行内通道不需要该参数
+     * @param $out_trade_no
+     * @param $total_fee
+     * @param string $body
+     * @param string $ip
+     * @param string $return_url
+     * @return array|mixed
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     */
+    public function alipayAppPay($trade_no, $out_trade_no, $total_fee, $body, $ip = "127.0.0.1", $return_url = "");
 
     /**
      * trade.alipay.h5pay
@@ -161,6 +174,23 @@ interface JzPayInterface
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
     public function alipayH5Pay($trade_no, $out_trade_no, $total_fee, $body, $ip = "127.0.0.1", $return_url = "");
+
+    /**
+     * trade.alipay.mppay
+     * 适用支付宝小程序中拉起支付宝支付。
+     *
+     * @param string $trade_no 交易流水号全局唯一,交易流水号全局唯一,目前指有建行的通道需要该参数,其他行内通道不需要该参数
+     * @param string $appid
+     * @param string $buyid
+     * @param string $out_trade_no
+     * @param int $total_fee
+     * @param string $body
+     * @param string $ip
+     * @param string $return_url
+     * @return array|mixed
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     */
+    public function alipayMpPay($trade_no, $appid, $buyid, $out_trade_no, $total_fee, $body, $ip = "127.0.0.1", $return_url = "");
 
     /**
      * trade.alipay.micropay
@@ -204,7 +234,6 @@ interface JzPayInterface
      */
     public function unionpayMicroPay($trade_no, $out_trade_no, $total_fee, $body, $ip = "127.0.0.1", $return_url = "");
 
-
     /**
      * 回调通知验签
      * 商户系统对于支付结果通知的内容一定要做签名验证
@@ -225,7 +254,6 @@ interface JzPayInterface
      */
     public function orderQuery($trade_no, $out_trade_no);
 
-
     /**
      * 订单退款接口
      *
@@ -241,7 +269,6 @@ interface JzPayInterface
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
     public function orderRefund($trade_no, $out_order_no, $out_trade_no, $out_refund_no, $total_fee, $refund_fee, $mrk_fee = 0, $body = "伊的家商城订单", $trxType = '12008');
-
 
     /**
      * 订单退款进度查询接口
