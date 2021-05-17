@@ -11,7 +11,7 @@ use jzweb\sat\ccbpay\Lib\Log;
  *
  * @author changge(1282350001@qq.com)
  */
-class  HttpRequest
+class HttpRequest
 {
 
     private $config;
@@ -215,7 +215,7 @@ class  HttpRequest
             if ($res->getStatusCode() == 200) {
                 $content = $this->formatMessage($res->getBody()->getContents());
             } else {
-                throw  new ServerException("网络请求异常");
+                throw new ServerException("网络请求异常");
             }
             return $this->parsingMessage($content);
         } catch (\Exception $e) {
@@ -225,10 +225,9 @@ class  HttpRequest
                 $this->log->log("打印调试信息:" . sprintf("请求流水号:%s API:%s", $data['tradeNo'], $trxCode));
                 $this->log->log("异常错误信息:" . $e->getMessage(), 'error');
             }
-            return ['return_code' => "FAIL", 'return_msg' => $e->getMessage()];
+            return ['returnCode' => "FAIL", 'returnMessage' => $e->getMessage()];
         }
     }
-
 
     /**
      * 验签操作
@@ -300,7 +299,6 @@ class  HttpRequest
             throw new ServerException("验签失败");
         }
 
-
         if (isset($info['salt']) && $info['salt'] && !$asynchro) {
             /** 证书私钥解密 */
             $salt = (new Rsa())->rsaP12Decrypt($info['salt'], $this->config['private_key_path'], $this->config['private_key_keyword_path']);
@@ -318,7 +316,7 @@ class  HttpRequest
 
         $result = [
             'info' => $info,
-            'body' => $body
+            'body' => $body,
         ];
 
         //写日志

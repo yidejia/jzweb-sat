@@ -117,8 +117,8 @@ class Client implements JzPayInterface
             'sumInsuranceAmt' => 0,
             'cntlist1' => 0,
             'Lists1' => [],
-            'rmk2' => $data['appid'] ?: "", //预留字段2，微信小程序/微信公众号支付时必输，上送微信小程序/微信公众号的APPID
-            'rmk3' => $data['openid'] ?: "", //预留字段3,微信小程序/微信公众号支付时必输，上送微信小程序/微信公众号的用户子标识OPENID
+            'rmk2' => $data['appid'] ?? "", //预留字段2，微信小程序/微信公众号支付时必输，上送微信小程序/微信公众号的APPID
+            'rmk3' => $data['openid'] ?? "", //预留字段3,微信小程序/微信公众号支付时必输，上送微信小程序/微信公众号的用户子标识OPENID
             'clientIp' => $data['ip'],
             'payChannel' => $this->config['payChannel'] ?: '',
         ];
@@ -287,8 +287,30 @@ class Client implements JzPayInterface
      */
     public function weixinAppPay($trade_no, $out_trade_no, $total_fee, $body, $ip = "127.0.0.1", $return_url = "")
     {
-        //todo 暂时不支持该支付方式
-        return ['error_code' => 888888, 'err_code_dsc' => '系统暂时不支持该支付方式'];
+        $params = [
+            'trade_no' => $trade_no,
+            'out_trade_no' => $out_trade_no,
+            'total_fee' => $total_fee,
+            'body' => $body,
+            'ip' => $ip,
+            'return_url' => $return_url,
+        ];
+        $data = $this->buildRequestParams(self::PAYTYPE_C, $params);
+        $result = (new Trade($this->config))->anonyPay($data);
+
+        //结果处理
+        if (isset($result['info']) || isset($result['body'])) {
+            if ($result && $result['body']['rstCode'] == "0") {
+                return array_merge([
+                    'result_code' => "SUCCESS",
+                    'return_code' => "SUCCESS",
+                ], $result['body']);
+            } else {
+                return ['err_code' => 888892, "err_code_des" => isset($result['body']['rstMess']) ? $result['body']['rstMess'] : $result['info']['errMsg']];
+            }
+        } else {
+            return ['err_code' => $result['returnCode'], "err_code_des" => $result['returnMessage']];
+        }
     }
 
     /**
@@ -513,10 +535,51 @@ class Client implements JzPayInterface
     }
 
     /**
+     * trade.alipay.apppay
+     * 支付宝APP支付，调用统一下单接口【拉起支付宝APP支付,支付宝官方原生的】
+     *
+     * @param string $trade_no
+     * @param $out_trade_no
+     * @param $total_fee
+     * @param string $body
+     * @param string $ip
+     * @param string $return_url
+     * @return array|mixed
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     */
+    public function alipayAppPay($trade_no, $out_trade_no, $total_fee, $body, $ip = "127.0.0.1", $return_url = "")
+    {
+        $params = [
+            'trade_no' => $trade_no,
+            'out_trade_no' => $out_trade_no,
+            'total_fee' => $total_fee,
+            'body' => $body,
+            'ip' => $ip,
+            'return_url' => $return_url,
+        ];
+        $data = $this->buildRequestParams(self::PAYTYPE_D, $params);
+        $result = (new Trade($this->config))->anonyPay($data);
+
+        //结果处理
+        if (isset($result['info']) || isset($result['body'])) {
+            if ($result && $result['body']['rstCode'] == "0") {
+                return array_merge([
+                    'result_code' => "SUCCESS",
+                    'return_code' => "SUCCESS",
+                ], $result['body']);
+            } else {
+                return ['err_code' => 888892, "err_code_des" => isset($result['body']['rstMess']) ? $result['body']['rstMess'] : $result['info']['errMsg']];
+            }
+        } else {
+            return ['err_code' => $result['returnCode'], "err_code_des" => $result['returnMessage']];
+        }
+    }
+
+    /**
      * trade.alipay.h5pay
      * 支付宝H5支付，调用统一下单接口
      *
-     * @param string $trade_no 交易流水号，随机生成, 每次请求都必须有, 建议用公共方法生成
+     * @param string $trade_no
      * @param string $out_trade_no
      * @param $total_fee
      * @param string $body
@@ -528,6 +591,26 @@ class Client implements JzPayInterface
     public function alipayH5Pay($trade_no, $out_trade_no, $total_fee, $body, $ip = "127.0.0.1", $return_url = "")
     {
         //todo 暂时不支持该支付方式
+        return ['error_code' => 888888, 'err_code_dsc' => '系统暂时不支持该支付方式'];
+    }
+
+    /**
+     * trade.alipay.mppay
+     * 适用支付宝小程序中拉起支付宝支付。
+     *
+     * @param string $trade_no
+     * @param string $appid
+     * @param string $buyid
+     * @param string $out_trade_no
+     * @param int $total_fee
+     * @param string $body
+     * @param string $ip
+     * @param string $return_url
+     * @return array|mixed
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     */
+    public function alipayMpPay($trade_no, $appid, $buyid, $out_trade_no, $total_fee, $body, $ip = "127.0.0.1", $return_url = "")
+    {
         return ['error_code' => 888888, 'err_code_dsc' => '系统暂时不支持该支付方式'];
     }
 
@@ -782,5 +865,4 @@ class Client implements JzPayInterface
             return ['err_code' => $result['returnCode'], "err_code_des" => $result['returnMessage']];
         }
     }
-
 }

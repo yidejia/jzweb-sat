@@ -28,7 +28,6 @@ class Client implements JzPayInterface
         $this->joinPay = new JoinPay($config);
     }
 
-
     /**
      * trade.weixin.jspay
      * 微信公众号支付，适用原生公众号支付。
@@ -270,7 +269,6 @@ class Client implements JzPayInterface
         return $this->joinPay->unifiedorder($params);
     }
 
-
     /**
      * trade.alipay.jspay
      * 支付宝公众号支付，调用统一下单接口
@@ -285,6 +283,25 @@ class Client implements JzPayInterface
     public function alipayJsPay($trade_no, $out_trade_no, $total_fee, $body = "伊的家商城订单", $ip = "127.0.0.1", $return_url = "")
     {
         //todo 暂时不支持该支付方式
+        return ['error_code' => 888888, 'err_code_dsc' => '系统暂时不支持该支付方式'];
+    }
+
+    /**
+     * trade.alipay.apppay
+     * 支付宝APP支付，调用统一下单接口【拉起支付宝APP支付,支付宝官方原生的】
+     *
+     * @param string $trade_no
+     * @param $out_trade_no
+     * @param $total_fee
+     * @param string $body
+     * @param string $ip
+     * @param string $return_url
+     *
+     * @return array|mixed
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     */
+    public function alipayAppPay($trade_no, $out_trade_no, $total_fee, $body, $ip = "127.0.0.1", $return_url = "")
+    {
         return ['error_code' => 888888, 'err_code_dsc' => '系统暂时不支持该支付方式'];
     }
 
@@ -317,6 +334,27 @@ class Client implements JzPayInterface
         $params['op_term_tp'] = "WEB";
         $return_url && $params['return_url'] = $return_url;
         return $this->joinPay->unifiedorder($params);
+    }
+
+    /**
+     * trade.alipay.mppay
+     * 适用支付宝小程序中拉起支付宝支付。
+     *
+     * @param string $trade_no
+     * @param string $appid
+     * @param string $buyid
+     * @param string $out_trade_no
+     * @param int $total_fee
+     * @param string $body
+     * @param string $ip
+     * @param string $return_url
+     *
+     * @return array|mixed
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     */
+    public function alipayMpPay($trade_no, $appid, $buyid, $out_trade_no, $total_fee, $body, $ip = "127.0.0.1", $return_url = "")
+    {
+        return ['error_code' => 888888, 'err_code_dsc' => '系统暂时不支持该支付方式'];
     }
 
     /**
@@ -383,7 +421,6 @@ class Client implements JzPayInterface
         return ['error_code' => 888888, 'err_code_dsc' => '系统暂时不支持该支付方式'];
     }
 
-
     /**
      * 回调通知验签
      * 商户系统对于支付结果通知的内容一定要做签名验证
@@ -412,7 +449,6 @@ class Client implements JzPayInterface
         return $this->joinPay->orderQuery($out_trade_no);
     }
 
-
     /**
      * 订单退款接口
      *
@@ -432,7 +468,6 @@ class Client implements JzPayInterface
         return $this->joinPay->orderRefund($out_trade_no, $out_refund_no, $total_fee, $refund_fee);
     }
 
-
     /**
      * 订单退款进度查询接口
      *
@@ -447,5 +482,4 @@ class Client implements JzPayInterface
     {
         return $this->joinPay->orderRefundQuery($out_trade_no);
     }
-
 }

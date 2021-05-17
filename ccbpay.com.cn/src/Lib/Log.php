@@ -2,8 +2,8 @@
 
 namespace jzweb\sat\ccbpay\Lib;
 
-use Monolog\Handler\StreamHandler;
 use Monolog\Formatter\LineFormatter;
+use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
 
 /**
@@ -28,7 +28,6 @@ class Log
         $stream->setFormatter($formatter);
         $this->log = new Logger(basename(__FILE__));
         $this->log->pushHandler($stream);
-
     }
 
     /**
@@ -42,5 +41,3 @@ class Log
         return $this->log->log($level, $message);
     }
 }
-
-?>
