@@ -11,7 +11,6 @@ namespace jzweb\sat\ccbll;
 class WxPayAdapter extends Client
 {
 
-
     /**
      * 构造函数
      *
@@ -23,7 +22,6 @@ class WxPayAdapter extends Client
         parent::__construct($config);
     }
 
-
     /**
      *文件上传
      *
@@ -32,14 +30,15 @@ class WxPayAdapter extends Client
      * @param string $oper_type 操作类型：01:新增，02:修改，默认为01
      * @param string $mch_no 存管系统用户编号
      * @param string $pic_type 文件类型：01  法人身份证正面图片；02  法人身份证反面图片；03  手持身份证图片；04  统一信用代码图片；05  授权书图片；06  被授权人身份证正面；07  被授权人身份证反面；08  开店合作协议；09  店铺图片；10  收款人身份证正面；11  收款人身份证反面；12  开店证明材料文件
+     * @param string $file_type 文件格式:01:图片,02:PDF文件
      * @return array
      */
-    public function uploadFile($trade_no, $file_url, $oper_type = "01", $mch_no = '', $pic_type = '01')
+    public function uploadFile($trade_no, $file_url, $oper_type = "01", $mch_no = '', $pic_type = '01', $file_type = '01')
     {
         $data = [
             "tradeNo" => $trade_no,
             "fileUrl" => $file_url,
-            "fileType" => "01", //文件格式:01:图片,02:PDF文件
+            "fileType" => $file_type,
             "operType" => $oper_type,
         ];
 
@@ -59,9 +58,7 @@ class WxPayAdapter extends Client
         } else {
             return ['err_code' => $result['returnCode'], "err_code_des" => $result['returnMessage']];
         }
-
     }
-
 
     /**
      * 企业用户开电子登记簿
@@ -80,13 +77,14 @@ class WxPayAdapter extends Client
      * @param string $legal_front_pic_id 法人身份证正面
      * @param string $legal_back_pic_id 法人身份证反面
      * @param string $cert_pic_id 授权书图片ID
+     * @param string $cont_pic_id 合作协议文件ID
      * @param int $role_id 存管企业角色:100:企业店铺、101：企业买家、002:个体工商户店铺、300:交易市场物流企业、310:交易市场仓储企业
      * @param string $registrant 注册人身份，1:法定代表人、2:授权人
      * @param int $acc_type //账户类型，1:对私,2:对公
      * @param bool $is_mobile_view
      * @param string $return_url
      */
-    public function createAccountByWeb($trade_no, $entity_id, $entity_name, $legal, $legal_id_card, $agent, $agent_id_card, $agent_mobile, $buss_pic_id, $legal_front_pic_id, $legal_back_pic_id, $cert_pic_id = "", $role_id = "100", $registrant = 1, $acc_type = 2, $is_mobile_view = false, $return_url = "")
+    public function createAccountByWeb($trade_no, $entity_id, $entity_name, $legal, $legal_id_card, $agent, $agent_id_card, $agent_mobile, $buss_pic_id, $legal_front_pic_id, $legal_back_pic_id, $cert_pic_id = "", $cont_pic_id = '', $role_id = "100", $registrant = 1, $acc_type = 2, $is_mobile_view = false, $return_url = "")
     {
         $data = [
             'tradeNo' => $trade_no,
@@ -110,7 +108,9 @@ class WxPayAdapter extends Client
             'legalFrontPic' => $legal_front_pic_id,
             'legalBackPic' => $legal_back_pic_id,
             'certPic' => $cert_pic_id,
+            'contPic1' => $cont_pic_id,
         ];
+
         (new Client($this->config))->merchantAccount($data, $is_mobile_view);
     }
 
@@ -148,7 +148,7 @@ class WxPayAdapter extends Client
             'legalPerNm' => $legal,
             'legalPerIdTyp' => '01',
             'legalPerIdNo' => $legal_id_card,
-            'mercFlg' => 1,     //商户标识，默认1
+            'mercFlg' => 1, //商户标识，默认1
             'receAcTyp' => $acc_type,
             'receAc' => $account,
             'receAcName' => $account_name,
@@ -200,7 +200,7 @@ class WxPayAdapter extends Client
             'mbrCode' => $mch_code,
             'operType' => $oper_type,
             'pageRetUrl' => $return_url, //页面返回url
-            'bgRetUrl' => $this->config['callback_update_account_url'],   //后台通知url
+            'bgRetUrl' => $this->config['callback_update_account_url'], //后台通知url
         ];
 
         //银行账号信息
@@ -255,14 +255,14 @@ class WxPayAdapter extends Client
      * @param string $change_acc_id 账户变更资料ID，[28，必填]
      * @param string $oper_type 14.法人变更, 15.银行账号变更, 28.银行账号强制变更
      */
-    public function merchantInfoChange($trade_no, $mch_code, $legal, $legal_id_card, $legal_mobile = '', $account = '', $account_name = '', $bank_name = '', $eq_bank_name = '', $legal_front_pic_id, $legal_back_pic_id, $change_acc_id = '', $buss_pic_id='', $oper_type = "15")
+    public function merchantInfoChange($trade_no, $mch_code, $legal, $legal_id_card, $legal_mobile = '', $account = '', $account_name = '', $bank_name = '', $eq_bank_name = '', $legal_front_pic_id, $legal_back_pic_id, $change_acc_id = '', $buss_pic_id = '', $oper_type = "15")
     {
         $data = [
             'tradeNo' => $trade_no,
             'mbrCode' => $mch_code,
             'operType' => $oper_type,
-            'bgRetUrl' => $this->config['callback_update_account2_url'],   //后台通知url
-            'accountNm' => $legal,  //持卡人姓名/账户户名/法人真实姓名
+            'bgRetUrl' => $this->config['callback_update_account2_url'], //后台通知url
+            'accountNm' => $legal, //持卡人姓名/账户户名/法人真实姓名
         ];
 
         if ($oper_type == '14') {
@@ -359,7 +359,6 @@ class WxPayAdapter extends Client
         }
     }
 
-
     /**
      * 交易密码重置
      *
@@ -377,7 +376,7 @@ class WxPayAdapter extends Client
             'mbrCode' => $mch_code,
             'operType' => $oper_type,
             'pageRetUrl' => $return_url, //页面返回url
-            'bgRetUrl' => $this->config['callback_rest_pwd_url'],   //后台通知url
+            'bgRetUrl' => $this->config['callback_rest_pwd_url'], //后台通知url
         ];
         (new Client($this->config))->passwordSetting($data, $is_mobile_view);
     }
@@ -399,7 +398,7 @@ class WxPayAdapter extends Client
             'mbrCode' => $mch_code,
             'operType' => $oper_type,
             'pageRetUrl' => $return_url, //页面返回url
-            'bgRetUrl' => $this->config['callback_rest_pwd2_url'],   //后台通知url
+            'bgRetUrl' => $this->config['callback_rest_pwd2_url'], //后台通知url
         ];
         (new Client($this->config))->passwordSetting($data, $is_mobile_view);
     }
@@ -492,7 +491,6 @@ class WxPayAdapter extends Client
             return ['err_code' => $result['returnCode'], "err_code_des" => $result['returnMessage']];
         }
     }
-
 
     /**
      * 回调通知验签
