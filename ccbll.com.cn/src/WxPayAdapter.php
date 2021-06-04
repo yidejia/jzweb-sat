@@ -538,18 +538,19 @@ class WxPayAdapter extends Client
      * 发货通知
      * @param   string $trade_no [交易流水号]
      * @param   string $mch_code [龙存管商户号]
+     * @param   string $pater_trade_no [总订单号]
      * @param   string $out_trade_no [交易订单号]
      * @param   string $trxType [业务类型,12003:商城收货确认]
      * @param   string $remark [备注]
      * @return  array|mixed
      */
-    public function goodsNotice($trade_no, $mch_code, $out_trade_no, $trxType = '12003', $remark = '系统发货')
+    public function goodsNotice($trade_no, $mch_code, $pater_trade_no, $out_trade_no, $trxType = '12003', $remark = '系统发货')
     {
         $data = [
             'tradeNo' => $trade_no,
             'mbrCode' => $mch_code,
             'trxType' => $trxType,
-            'oriOrdNo' => $out_trade_no,
+            'oriOrdNo' => $pater_trade_no,
             'tradeOrdNo' => $out_trade_no,
             'remark' => $remark,
             'fflag' => 1,
