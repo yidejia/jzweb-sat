@@ -77,7 +77,7 @@ class HttpRequest
         // }
 
         //对称加密
-        $iv = openssl_random_pseudo_bytes(openssl_cipher_iv_length('des-ede3'));
+        $iv = openssl_random_pseudo_bytes(openssl_cipher_iv_length('des-ede3') ?: 16);
         $result = openssl_encrypt($data, 'des-ede3', $salt, OPENSSL_RAW_DATA, $iv);
         return $isBase64Encode ? base64_encode($result) : $result;
     }
