@@ -45,10 +45,10 @@ interface JzPayInterface
     /**
      * trade.weixin.apppay
      * 微信APP支付，调用统一下单接口【拉起微信APP支付,微信官方原生的】
-     * todo 我们目前的产品,暂时没有开通该服务
      *
      * @param string $trade_no 交易流水号全局唯一,交易流水号全局唯一,目前指有建行的通道需要该参数,其他行内通道不需要该参数
      * @param $out_trade_no
+     * @param $openid
      * @param $total_fee
      * @param string $body
      * @param string $ip
@@ -56,7 +56,7 @@ interface JzPayInterface
      * @return array|mixed
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function weixinAppPay($trade_no, $out_trade_no, $total_fee, $body, $ip = "127.0.0.1", $return_url = "");
+    public function weixinAppPay($trade_no, $openid, $out_trade_no, $total_fee, $body, $ip = "127.0.0.1", $return_url = "");
 
     /**
      * trade.weixin.apppay2
@@ -150,6 +150,7 @@ interface JzPayInterface
      * 支付宝APP支付，调用统一下单接口【拉起支付宝APP支付,支付宝官方原生的】
      *
      * @param string $trade_no 交易流水号全局唯一,交易流水号全局唯一,目前指有建行的通道需要该参数,其他行内通道不需要该参数
+     * @param $buyid
      * @param $out_trade_no
      * @param $total_fee
      * @param string $body
@@ -158,7 +159,7 @@ interface JzPayInterface
      * @return array|mixed
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function alipayAppPay($trade_no, $out_trade_no, $total_fee, $body, $ip = "127.0.0.1", $return_url = "");
+    public function alipayAppPay($trade_no, $buyid, $out_trade_no, $total_fee, $body, $ip = "127.0.0.1", $return_url = "");
 
     /**
      * trade.alipay.h5pay
@@ -180,7 +181,6 @@ interface JzPayInterface
      * 适用支付宝小程序中拉起支付宝支付。
      *
      * @param string $trade_no 交易流水号全局唯一,交易流水号全局唯一,目前指有建行的通道需要该参数,其他行内通道不需要该参数
-     * @param string $appid
      * @param string $buyid
      * @param string $out_trade_no
      * @param int $total_fee
@@ -190,7 +190,7 @@ interface JzPayInterface
      * @return array|mixed
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function alipayMpPay($trade_no, $appid, $buyid, $out_trade_no, $total_fee, $body, $ip = "127.0.0.1", $return_url = "");
+    public function alipayMpPay($trade_no, $buyid, $out_trade_no, $total_fee, $body, $ip = "127.0.0.1", $return_url = "");
 
     /**
      * trade.alipay.micropay

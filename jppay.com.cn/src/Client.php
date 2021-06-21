@@ -97,9 +97,9 @@ class Client implements JzPayInterface
     /**
      * trade.weixin.apppay
      * 微信APP支付，调用统一下单接口【拉起微信APP支付,微信官方原生的】
-     * todo 我们目前的产品,暂时没有开通该服务
      *
      * @param $out_trade_no
+     * @param $openid
      * @param $total_fee
      * @param string $body
      * @param string $ip
@@ -108,7 +108,7 @@ class Client implements JzPayInterface
      * @return array|mixed
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function weixinAppPay($trade_no, $out_trade_no, $total_fee, $body = "伊的家商城订单", $ip = "127.0.0.1", $return_url = "")
+    public function weixinAppPay($trade_no, $openid, $out_trade_no, $total_fee, $body = "伊的家商城订单", $ip = "127.0.0.1", $return_url = "")
     {
         if (time() > strtotime('2020-03-31 23:55:00')) {
             return ['error_code' => 888889, 'err_code_dsc' => '该支付渠道已停止支持'];
@@ -291,6 +291,7 @@ class Client implements JzPayInterface
      * 支付宝APP支付，调用统一下单接口【拉起支付宝APP支付,支付宝官方原生的】
      *
      * @param string $trade_no
+     * @param string $buyid
      * @param $out_trade_no
      * @param $total_fee
      * @param string $body
@@ -300,7 +301,7 @@ class Client implements JzPayInterface
      * @return array|mixed
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function alipayAppPay($trade_no, $out_trade_no, $total_fee, $body, $ip = "127.0.0.1", $return_url = "")
+    public function alipayAppPay($trade_no, $buyid, $out_trade_no, $total_fee, $body, $ip = "127.0.0.1", $return_url = "")
     {
         return ['error_code' => 888888, 'err_code_dsc' => '系统暂时不支持该支付方式'];
     }
@@ -341,7 +342,6 @@ class Client implements JzPayInterface
      * 适用支付宝小程序中拉起支付宝支付。
      *
      * @param string $trade_no
-     * @param string $appid
      * @param string $buyid
      * @param string $out_trade_no
      * @param int $total_fee
@@ -352,7 +352,7 @@ class Client implements JzPayInterface
      * @return array|mixed
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function alipayMpPay($trade_no, $appid, $buyid, $out_trade_no, $total_fee, $body, $ip = "127.0.0.1", $return_url = "")
+    public function alipayMpPay($trade_no, $buyid, $out_trade_no, $total_fee, $body, $ip = "127.0.0.1", $return_url = "")
     {
         return ['error_code' => 888888, 'err_code_dsc' => '系统暂时不支持该支付方式'];
     }
