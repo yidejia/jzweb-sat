@@ -23,6 +23,7 @@ class Client implements JzPayInterface
     //支付类型汇总
     const PAYTYPE_C = 'C'; //C:微信APP支付
     const PAYTYPE_D = 'D'; //D:支付宝APP支付
+    const PAYTYPE_D1 = 'D1'; //D:支付宝小程序支付
     const PAYTYPE_H = 'H'; //H:一码付（H5二维码）
     const PAYTYPE_I = 'I'; //I:微信扫码支付
     const PAYTYPE_J = 'J'; //J:微信公众号支付
@@ -57,6 +58,7 @@ class Client implements JzPayInterface
         $payTypes = [
             'C' => 'trade.weixin.apppay', //C:微信APP支付
             'D' => 'trade.alipay.apppay', //D:支付宝APP支付
+            'D1' => 'trade.alipay.mppay', //D1:支付宝小程序支付
             'H' => 'trade.unionpay.native', //H:一码付（H5二维码）
             'I' => 'trade.weixin.native', //I:微信扫码支付
             'J' => 'trade.weixin.jspay', //J:微信公众号支付
@@ -70,6 +72,7 @@ class Client implements JzPayInterface
             'S' => '', //S:龙支付APP支付
             'W' => 'trade.weixin.mppay', //W:微信小程序支付
         ];
+
         //返回转换后的类型
         if (isset($payTypes[strtoupper($payType)])) {
             return $payTypes[strtoupper($payType)];
@@ -274,21 +277,24 @@ class Client implements JzPayInterface
     /**
      * trade.weixin.apppay
      * 微信APP支付，调用统一下单接口【拉起微信APP支付,微信官方原生的】
-     * todo 我们目前的产品,暂时没有开通该服务
      *
      * @param string $trade_no 交易流水号，随机生成, 每次请求都必须有, 建议用公共方法生成
-     * @param $out_trade_no
-     * @param $total_fee
+     * @param string $openid
+     * @param string $out_trade_no
+     * @param int    $total_fee
      * @param string $body
      * @param string $ip
      * @param string $return_url
+     *
      * @return array|mixed
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function weixinAppPay($trade_no, $out_trade_no, $total_fee, $body, $ip = "127.0.0.1", $return_url = "")
+    public function weixinAppPay($trade_no, $openid, $out_trade_no, $total_fee, $body, $ip = "127.0.0.1", $return_url = "")
     {
         $params = [
             'trade_no' => $trade_no,
+            'appid' => $this->config['app_id'],
+            'openid' => $openid,
             'out_trade_no' => $out_trade_no,
             'total_fee' => $total_fee,
             'body' => $body,
@@ -301,12 +307,31 @@ class Client implements JzPayInterface
         //结果处理
         if (isset($result['info']) || isset($result['body'])) {
             if ($result && $result['body']['rstCode'] == "0") {
-                return array_merge([
+                if (!$mercOrdMsg = $result['body']['mercOrdMsg']) {
+                    return ['err_code' => 888889, "err_code_des" => "返回支付信息有缺失"];
+                }
+
+                $helpers = new Helpers($this->config);
+                $package = [
+                    "appId" => $this->config['app_id'],
+                    "timeStamp" => time(),
+                    "nonceStr" => $helpers->random(32),
+                    "package" => "prepay_id=" . $mercOrdMsg,
+                    "signType" => "MD5",
+                ];
+                $package['paySign'] = $helpers->makeSign($package);
+
+                return [
+                    'mch_id' => $this->config['PID'],
+                    'package_json' => json_encode($package),
+                    'prepay_id' => $mercOrdMsg,
                     'result_code' => "SUCCESS",
                     'return_code' => "SUCCESS",
-                ], $result['body']);
+                    'sign' => md5($result['info']['salt']),
+                    'trade_type' => $this->changePayType(self::PAYTYPE_C),
+                ];
             } else {
-                return ['err_code' => 888892, "err_code_des" => isset($result['body']['rstMess']) ? $result['body']['rstMess'] : $result['info']['errMsg']];
+                return ['err_code' => 888892, "err_code_des" => $result['body']['rstMess'] ?? $result['info']['errMsg']];
             }
         } else {
             return ['err_code' => $result['returnCode'], "err_code_des" => $result['returnMessage']];
@@ -449,7 +474,7 @@ class Client implements JzPayInterface
                     ];
                 }
             } else {
-                return ['err_code' => 888892, "err_code_des" => isset($result['body']['rstMess']) ? $result['body']['rstMess'] : $result['info']['errMsg']];
+                return ['err_code' => 888892, "err_code_des" => $result['body']['rstMess'] ?? $result['info']['errMsg']];
             }
         } else {
             return ['err_code' => $result['returnCode'], "err_code_des" => $result['returnMessage']];
@@ -539,6 +564,7 @@ class Client implements JzPayInterface
      * 支付宝APP支付，调用统一下单接口【拉起支付宝APP支付,支付宝官方原生的】
      *
      * @param string $trade_no
+     * @param $buyid
      * @param $out_trade_no
      * @param $total_fee
      * @param string $body
@@ -547,10 +573,11 @@ class Client implements JzPayInterface
      * @return array|mixed
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function alipayAppPay($trade_no, $out_trade_no, $total_fee, $body, $ip = "127.0.0.1", $return_url = "")
+    public function alipayAppPay($trade_no, $buyid, $out_trade_no, $total_fee, $body, $ip = "127.0.0.1", $return_url = "")
     {
         $params = [
             'trade_no' => $trade_no,
+            'appid' => $buyid,
             'out_trade_no' => $out_trade_no,
             'total_fee' => $total_fee,
             'body' => $body,
@@ -568,7 +595,7 @@ class Client implements JzPayInterface
                     'return_code' => "SUCCESS",
                 ], $result['body']);
             } else {
-                return ['err_code' => 888892, "err_code_des" => isset($result['body']['rstMess']) ? $result['body']['rstMess'] : $result['info']['errMsg']];
+                return ['err_code' => 888892, "err_code_des" => $result['body']['rstMess'] ?? $result['info']['errMsg']];
             }
         } else {
             return ['err_code' => $result['returnCode'], "err_code_des" => $result['returnMessage']];
@@ -599,7 +626,6 @@ class Client implements JzPayInterface
      * 适用支付宝小程序中拉起支付宝支付。
      *
      * @param string $trade_no
-     * @param string $appid
      * @param string $buyid
      * @param string $out_trade_no
      * @param int $total_fee
@@ -609,9 +635,63 @@ class Client implements JzPayInterface
      * @return array|mixed
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function alipayMpPay($trade_no, $appid, $buyid, $out_trade_no, $total_fee, $body, $ip = "127.0.0.1", $return_url = "")
+    public function alipayMpPay($trade_no, $buyid, $out_trade_no, $total_fee, $body, $ip = "127.0.0.1", $return_url = "")
     {
-        return ['error_code' => 888888, 'err_code_dsc' => '系统暂时不支持该支付方式'];
+        $params = [
+            'trade_no' => $trade_no,
+            'appid' => $buyid,
+            'out_trade_no' => $out_trade_no,
+            'total_fee' => $total_fee,
+            'body' => $body,
+            'ip' => $ip,
+            'return_url' => $return_url,
+        ];
+        $data = $this->buildRequestParams(self::PAYTYPE_D1, $params);
+        $result = (new Trade($this->config))->anonyPay($data);
+
+        //结果处理
+        if (isset($result['info']) || isset($result['body'])) {
+            if ($result && $result['body']['rstCode'] == "0") {
+                if (!$mercOrdMsg = $result['body']['mercOrdMsg']) {
+                    return ['err_code' => 888889, "err_code_des" => "返回支付信息有缺失"];
+                }
+
+                //判断是否是链接
+                if (preg_match("/^http(s)?:\\/\\/.+/", $mercOrdMsg)) {
+                    try {
+                        $client = (new HttpClientFactory())->create([
+                            'tracing_error_throw' => false,
+                            'response_log' => true,
+                        ]);
+                        $response = $client->get($mercOrdMsg);
+                        if ($content = $response->getBody()->getContents()) {
+                            (new Log($this->config))->log("支付链接解析:" . $content);
+
+                            $package = json_decode($content, true);
+                            if ($package['SUCCESS'] == 'true' && $package["ERRCODE"] == "000000") {
+                                return array_merge([
+                                    'result_code' => "SUCCESS",
+                                    'return_code' => "SUCCESS",
+                                    'package_json' => $package['jsapi'],
+                                ], $result['body']);
+                            } else {
+                                return ['err_code' => 888890, "err_code_des" => $package['ERRMSG'] . '[' . $package['ERRCODE'] . ']'];
+                            }
+                        } else {
+                            return ['err_code' => 888891, "err_code_des" => "获取支付信息失败"];
+                        }
+                    } catch (\Exception $e) {
+                        return ['err_code' => 888891, "err_code_des" => "获取支付信息失败，" . $e->getMessage()];
+                    }
+                } else {
+                    return ['err_code' => 888892, "err_code_des" => '获取支付信息格式异常'];
+                }
+            } else {
+                return ['err_code' => 888892, "err_code_des" => $result['body']['rstMess'] ?? $result['info']['errMsg']];
+            }
+        } else {
+            return ['err_code' => $result['returnCode'], "err_code_des" => $result['returnMessage']];
+        }
     }
 
     /**
@@ -724,7 +804,7 @@ class Client implements JzPayInterface
                     return ['err_code' => $result['info']['retCode'], "err_code_des" => '订单未支付成功'];
                 }
             } else {
-                return ['err_code' => $result['info']['retCode'], "err_code_des" => isset($result['body']['rstMess']) ? $result['body']['rstMess'] : $result['info']['errMsg']];
+                return ['err_code' => $result['info']['retCode'], "err_code_des" => $result['body']['rstMess'] ?? $result['info']['errMsg']];
             }
         } else {
             return ['err_code' => $result['returnCode'], "err_code_des" => $result['returnMessage']];
